@@ -20,6 +20,22 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+/* ── Portable string splitter (replaces strsep) ─────── */
+/* strsep() is a BSD/glibc extension absent in strict C11.
+ * This drop-in behaves identically for single-char delimiters. */
+static char *str_split_sep(char **sp, const char *delim) {
+    if (!sp || !*sp) return NULL;
+    char *start = *sp;
+    char *p = strpbrk(start, delim);
+    if (p) {
+        *p  = '\0';
+        *sp = p + 1;
+    } else {
+        *sp = NULL;
+    }
+    return start;
+}
+
 /* ── Trim whitespace ─────────────────────────────────── */
 static const char *skip_ws(const char *s) {
     while (*s && isspace((unsigned char)*s)) s++;
@@ -376,7 +392,7 @@ int shell_exec_line(Shell *sh, EngineContext *ctx, const char *line) {
         int last_rc = 0;
         char *rest = buf;
         char *seg;
-        while ((seg = strsep(&rest, ";")) != NULL) {
+        while ((seg = str_split_sep(&rest, ";")) != NULL) {
             const char *trimmed = seg;
             while (*trimmed && isspace((unsigned char)*trimmed)) trimmed++;
             if (*trimmed == '\0') continue;

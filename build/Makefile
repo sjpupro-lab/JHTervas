@@ -112,6 +112,8 @@ $(TEST_TERVAS): tests/test_tervas.c $(TERVAS_SRC) $(CORE_SRC)
 test_tervas: $(TEST_TERVAS)
 	./$(TEST_TERVAS)
 
+BRIDGE_LOG = tests/bridge_test.log
+
 test_all: tests/test_phase6 tests/test_tervas tests/test_phase8 tests/test_phase9 tests/test_phase10 tests/test_bridge
 	@echo "=== Phase-6 ==="
 	@./tests/test_phase6
@@ -124,11 +126,27 @@ test_all: tests/test_phase6 tests/test_tervas tests/test_phase8 tests/test_phase
 	@echo "=== Phase-10 Userland ==="
 	@./$(TEST_PHASE10)
 	@echo "=== Bridge Layer ==="
-	@./$(TEST_BRIDGE)
+	@./$(TEST_BRIDGE) | tee $(BRIDGE_LOG)
+	@echo "Bridge test log saved: $(BRIDGE_LOG)"
+
+# ─────────────────────────────────────────────────────────────────
+# Bridge test log — saves full test run info for release tracking
+# ─────────────────────────────────────────────────────────────────
+bridge_log: $(TEST_BRIDGE)
+	@{ \
+	  echo "=== Bridge Layer Extended Tests ==="; \
+	  echo "Binary  : $(TEST_BRIDGE)"; \
+	  echo "Compiler: $$($(CC) --version | head -1)"; \
+	  echo "Date    : $$(date -u '+%Y-%m-%dT%H:%M:%SZ')"; \
+	  echo "Tests   : B01 B02 B03 B04 B05 B06 B07 B08 B09 B10 B11 B12 B13 B14 B15 B16"; \
+	  echo "==================================="; \
+	  ./$(TEST_BRIDGE); \
+	} | tee $(BRIDGE_LOG)
+	@echo "Log saved to $(BRIDGE_LOG)"
 
 tervas: $(TERVAS_BIN)
 
-.PHONY: test_tervas test_all tervas
+.PHONY: test_tervas test_all tervas bridge_log
 
 # ─────────────────────────────────────────────────────────────────
 # Examples

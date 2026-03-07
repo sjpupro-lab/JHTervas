@@ -29,6 +29,9 @@ p7_build/
 .DS_Store
 Thumbs.db
 canvasos_launcher
+tests/test_phase8
 tests/test_phase9
 tests/*_asan
 tests/test_phase10
+tests/test_bridge
+tests/bridge_test.log

@@ -68,7 +68,7 @@ int fd_file_write_slot(void *ctx_v, FileDesc *fd, const uint8_t *buf, uint16_t l
     /* For O_APPEND, we need current content length first */
     if (fd->flags & O_APPEND) {
         FsSlotClass cls;
-        size_t cur_len = 0;
+        uint32_t cur_len = 0;
         FsResult sr = fs_stat(g_bridge_fs, fd->key, &cls, &cur_len);
         if (sr == FS_OK) fd->cursor = (uint16_t)cur_len;
     }
@@ -133,10 +133,10 @@ int fd_bridge_stat(const char *path, PathContext *pc,
     if (path_resolve(ctx, pc, path, &key) != 0) return -1;
 
     FsSlotClass cls;
-    size_t len = 0;
+    uint32_t len = 0;
     FsResult rc = fs_stat(g_bridge_fs, key, &cls, &len);
     if (rc != FS_OK) return -1;
 
-    *out_len = len;
+    *out_len = (size_t)len;
     return 0;
 }
