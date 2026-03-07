@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SJ CANVAS OS · DevDictionary Phase 9</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+:root{
+  --bg:#060809;
+  --panel:#0b0e12;
+  --panel2:#111417;
+  --border:#1a1e26;
+  --border2:#22272f;
+  --dim:#343b48;
+  --muted:#52596a;
+  --text:#b8c0d4;
+  --bright:#dde4f4;
+  --A:rgba(255,200,80,1);
+  --B:rgba(255,100,100,1);
+  --G:rgba(80,240,150,1);
+  --R:rgba(80,160,255,1);
+  --accent:#3ef5c0;
+  --p5:#b060ff;
+  --p9:#ff9040;
+  --doc:#f0a030;
+  --scan:rgba(62,245,192,0.015);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:13.5px; line-height:1.65;
+  min-height:100vh; overflow:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,var(--scan) 0,var(--scan) 1px,transparent 1px,transparent 3px);
+  pointer-events:none; z-index:0;
+}
+
+.app{position:relative;z-index:1;display:flex;height:100vh;}
+
+/* ── sidebar ── */
+.sidebar{
+  width:250px; background:var(--panel);
+  border-right:1px solid var(--border);
+  padding:16px 12px;
+  display:flex; flex-direction:column; gap:10px;
+  overflow-y:auto;
+}
+.brand{
+  padding:10px 10px 12px;
+  border:1px solid var(--border);
+  background:rgba(62,245,192,.03);
+  flex-shrink:0;
+}
+.brand .tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--accent);
+}
+.brand .title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:17px; font-weight:700; color:var(--bright);
+}
+.brand .sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
+
+.sep{height:1px; background:var(--border); flex-shrink:0;}
+
+.nav{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+.nav-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--dim); padding:4px 8px 2px;
+}
+.nav button{
+  width:100%; text-align:left; padding:8px 10px;
+  background:transparent; border:1px solid var(--border2);
+  color:var(--text); cursor:pointer;
+  font-family:'JetBrains Mono',monospace; font-size:10.5px;
+  letter-spacing:.05em; transition:all .1s;
+}
+.nav button:hover{border-color:var(--accent);color:var(--bright);background:rgba(62,245,192,.03);}
+.nav button.active{border-color:var(--accent);color:var(--accent);background:rgba(62,245,192,.05);}
+.nav button.p5{border-color:rgba(176,96,255,.3);color:var(--p5);}
+.nav button.p5:hover{border-color:var(--p5);background:rgba(176,96,255,.04);}
+.nav button.p5.active{border-color:var(--p5);background:rgba(176,96,255,.07);}
+.nav button.p9{border-color:rgba(255,144,64,.3);color:var(--p9);}
+.nav button.p9:hover{border-color:var(--p9);background:rgba(255,144,64,.04);}
+.nav button.p9.active{border-color:var(--p9);background:rgba(255,144,64,.07);}
+.nav button.doc-tab{border-color:rgba(240,160,48,.25);color:var(--doc);}
+.nav button.doc-tab:hover{border-color:var(--doc);background:rgba(240,160,48,.04);}
+.nav button.doc-tab.active{border-color:var(--doc);background:rgba(240,160,48,.06);}
+
+.sidebar-footer{
+  margin-top:auto; padding-top:10px; border-top:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim);
+}
+
+/* ── main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+.topbar{
+  display:flex; align-items:center; gap:14px;
+  padding:0 18px; height:52px;
+  border-bottom:1px solid var(--border);
+  background:var(--panel); flex-shrink:0;
+}
+
+.arch-pills{display:flex;gap:6px;align-items:center;}
+.pill{
+  display:inline-flex; align-items:center; gap:5px;
+  padding:2px 8px; border:1px solid var(--border2);
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  color:var(--muted); white-space:nowrap;
+}
+.dot{width:7px;height:7px;}
+.dot.A{background:var(--A);}.dot.B{background:var(--B);}
+.dot.G{background:var(--G);}.dot.R{background:var(--R);}
+.dot.p9{background:var(--p9);}
+
+.sw{position:relative; flex:1; max-width:540px;}
+.sw .pfx{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--accent);
+  pointer-events:none;
+}
+#search{
+  width:100%; padding:9px 12px 9px 34px;
+  background:var(--panel2); border:1px solid var(--border2);
+  border-left:3px solid var(--accent);
+  color:var(--bright);
+  font-family:'JetBrains Mono',monospace; font-size:13px; outline:none;
+  transition:box-shadow .12s, border-color .12s;
+}
+#search:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(62,245,192,.12);}
+#search::placeholder{color:var(--dim);}
+
+.content{flex:1;overflow-y:auto;padding:14px 18px 40px;}
+.meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-bottom:12px;}
+.meta .hi{color:var(--accent);}
+.meta .hi2{color:var(--p9);}
+
+/* ── arch map ── */
+.arch-map{
+  display:grid; grid-template-columns:repeat(5,1fr); gap:2px;
+  margin-bottom:18px;
+  font-family:'JetBrains Mono',monospace; font-size:8.5px;
+}
+.am{
+  padding:8px 9px; border:1px solid var(--border2);
+  cursor:default; transition:all .11s;
+}
+.am.click{cursor:pointer;}
+.am.click:hover{background:rgba(62,245,192,.03);border-color:var(--accent);}
+.am-name{font-weight:700;margin-bottom:1px;}
+.am-info{color:var(--dim);font-size:8px;}
+.am.wh .am-name{color:#38b4ff;}
+.am.bh .am-name{color:#ff5566;}
+.am.ctrl .am-name{color:var(--muted);}
+.am.cvp .am-name{color:#ffdd40;}
+.am.p5 .am-name{color:var(--p5);}
+.am.dim .am-name{color:var(--dim);}
+
+/* ── canvas capacity bar ── */
+.cap-bar{
+  display:flex; gap:10px; align-items:center; margin-bottom:16px;
+  padding:10px 14px; border:1px solid var(--border);
+  background:var(--panel); font-family:'JetBrains Mono',monospace; font-size:9.5px;
+}
+.cap-item{display:flex;flex-direction:column;gap:2px;}
+.cap-val{color:var(--accent);font-size:12px;font-weight:700;}
+.cap-label{color:var(--dim);font-size:8px;text-transform:uppercase;letter-spacing:.1em;}
+.cap-sep{color:var(--border2);margin:0 2px;}
+
+/* ── cards ── */
+.cards{display:flex;flex-direction:column;gap:2px;}
+
+.card{
+  background:var(--panel); border:1px solid var(--border);
+  border-left:3px solid transparent;
+  animation:fi .12s ease-out both;
+}
+@keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.card:hover{background:var(--panel2);}
+
+.card.gCore{border-left-color:#4a90d9;}
+.card.gEngine{border-left-color:var(--accent);}
+.card.gFilesystem{border-left-color:#50c88a;}
+.card.gIO{border-left-color:#ffdd40;}
+.card.gDocs{border-left-color:var(--doc);}
+.card.gPhase5{border-left-color:var(--p5);}
+.card.gVM{border-left-color:#ff9040;}
+.card.gPixelCode{border-left-color:#ffdd40;}
+.card.gPhase9{border-left-color:#ff9040;}
+
+.head{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 12px;cursor:pointer;user-select:none;
+}
+.key{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;font-weight:700;color:var(--bright);flex:1;
+}
+.badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;padding:1px 6px;border:1px solid var(--border2);
+  white-space:nowrap;
+}
+.badge.A{color:var(--A);border-color:rgba(255,200,80,.25);background:rgba(255,200,80,.05);}
+.badge.B{color:var(--B);border-color:rgba(255,100,100,.25);background:rgba(255,100,100,.05);}
+.badge.G{color:var(--G);border-color:rgba(80,240,150,.25);background:rgba(80,240,150,.05);}
+.badge.R{color:var(--R);border-color:rgba(80,160,255,.25);background:rgba(80,160,255,.05);}
+.badge.grp{color:var(--muted);}
+.badge.p5b{color:var(--p5);border-color:rgba(176,96,255,.3);background:rgba(176,96,255,.05);}
+.badge.p9b{color:var(--p9);border-color:rgba(255,144,64,.3);background:rgba(255,144,64,.05);}
+.badge.dob{color:var(--doc);border-color:rgba(240,160,48,.25);background:rgba(240,160,48,.05);}
+.chev{color:var(--dim);font-size:9px;font-family:monospace;transition:transform .12s;}
+.card.open .chev{transform:rotate(90deg);}
+
+.body{display:none;border-top:1px solid var(--border);padding:10px 12px 12px;}
+.card.open .body{display:block;}
+.desc{color:var(--text);font-size:13px;line-height:1.75;margin-bottom:10px;}
+.grid{display:grid;grid-template-columns:80px 1fr;gap:3px 8px;}
+.k{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;padding-top:2px;}
+.v{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);line-height:1.9;}
+.kw{
+  display:inline-block;background:var(--panel2);
+  border:1px solid var(--border2);padding:0 5px;margin:1px 2px;
+  color:var(--accent);font-size:9px;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;transition:border-color .1s;
+}
+.kw:hover{border-color:var(--accent);}
+
+.doc-body{
+  background:var(--panel2);border:1px solid var(--border);
+  padding:10px 12px;margin-top:8px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--dim);line-height:1.8;white-space:pre-wrap;word-break:break-word;
+}
+
+.empty{
+  padding:48px 0;text-align:center;
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);
+}
+.empty em{color:var(--accent);font-style:normal;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- sidebar -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="tag">SJCANVOS</div>
+    <div class="title">DevDictionary</div>
+    <div class="sub">Phase 9 · 60 entries · PixelCode VM</div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-label">Core</div>
+    <button data-tab="Home" class="active">◈ 전체 (Home)</button>
+    <button data-tab="VM">⬡ VM</button>
+    <button data-tab="PixelCode">⬡ PixelCode</button>
+  </div>
+
+  <div class="sep"></div>
+
+  <div class="nav">
+    <div class="nav-label">Phase 9</div>
+    <button data-tab="Phase9" class="p9">⬡ Phase 9 전체</button>
+    <button data-tab="Phase9-VM" class="p9">⬡ [VM] 실행 모델</button>
+    <button data-tab="Phase9-Opcode" class="p9">⬡ [OPCODE] B채널 명령어</button>
+    <button data-tab="Phase9-PixelCode" class="p9">⬡ [PXLC] 언어 명령</button>
+  </div>
+
+  <div class="sep"></div>
+
+  <div class="nav">
+    <div class="nav-label">문서 본문 검색</div>
+    <button data-tab="Docs" class="doc-tab">📄 Docs</button>
+    <button data-tab="Docs-TODO_PHASE9_PIXELCODE_VM" class="doc-tab">└ Phase 9 Plan</button>
+  </div>
+
+  <div class="sidebar-footer">
+    sjcanvos@canvasos.dev<br>
+    부산, 대한민국
+  </div>
+</aside>
+
+<!-- main -->
+<section class="main">
+  <div class="topbar">
+    <div class="arch-pills">
+      <span class="pill"><span class="dot A"></span>A=Where</span>
+      <span class="pill"><span class="dot B"></span>B=What</span>
+      <span class="pill"><span class="dot G"></span>G=State</span>
+      <span class="pill"><span class="dot R"></span>R=Stream</span>
+      <span class="pill"><span class="dot p9"></span>P9</span>
+    </div>
+    <div class="sw">
+      <span class="pfx">›</span>
+      <input id="search" type="text" autocomplete="off" spellcheck="false"
+        placeholder="심볼·함수·개념·문서 본문 통합 검색 — VmState, vm_step, HALT, PixelCode, B=0x01 …">
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="meta" id="meta"></div>
+    <div id="arch-map"></div>
+    <div id="cap-bar"></div>
+    <div class="cards" id="cards"></div>
+  </div>
+</section>
+</div>
+
+<script>
+/* ── DATA ── */
+const DATA = [
+  /* ── Group: Phase9 — VmState struct and fields ── */
+  {kind:"struct", key:"VmState", group:"Phase9", desc:"PixelCode VM 실행 상태. PC(x,y), 레지스터(A/B/G/R), 비교 플래그, 콜스택, 실행 제어 필드 포함.", loc:"include/canvasos_vm.h", tags:"vm p9", keywords:"vm state pc register flag stack running trace tick", values:"pc_x:u32, pc_y:u32, reg_A:u32, reg_B:u8, reg_G:u8, reg_R:u8, flag:u8, sp:u32, call_stack[32]:u32, running:bool, trace:bool, pid:u32, tick_limit:u32", channel:"A,B,G,R"},
+  {kind:"field", key:"VmState.pc_x / VmState.pc_y", group:"Phase9", desc:"VM Program Counter. pc_x=열(X좌표, 고정), pc_y=행(Y좌표, 아래로 증가). Y축 아래로 흐르는 실행 모델.", loc:"include/canvasos_vm.h", tags:"vm p9", keywords:"pc program counter x y column row tick step", values:"", channel:"A"},
+  {kind:"field", key:"VmState.reg_A", group:"Phase9", desc:"A 레지스터. 주소/대상 타일 좌표(y*1024+x)를 담는 32비트.", loc:"include/canvasos_vm.h", tags:"vm p9", keywords:"reg_A register address tile coordinate", values:"u32", channel:"A"},
+  {kind:"field", key:"VmState.reg_B", group:"Phase9", desc:"B 레지스터. 현재 명령어(opcode). 셀의 B 채널 값과 동일.", loc:"include/canvasos_vm.h", tags:"vm p9 opcode", keywords:"reg_B register opcode instruction B channel", values:"u8", channel:"B"},
+  {kind:"field", key:"VmState.reg_G", group:"Phase9", desc:"G 레지스터. 상태/피연산자. 셀의 G 채널 값.", loc:"include/canvasos_vm.h", tags:"vm p9", keywords:"reg_G register state operand G channel", values:"u8", channel:"G"},
+  {kind:"field", key:"VmState.reg_R", group:"Phase9", desc:"R 레지스터. 데이터/피연산자. 셀의 R 채널 값.", loc:"include/canvasos_vm.h", tags:"vm p9", keywords:"reg_R register data operand R channel", values:"u8", channel:"R"},
+  {kind:"field", key:"VmState.flag", group:"Phase9", desc:"비교 플래그. CMP(0x07) 명령 결과 저장. JZ/JNZ 분기 조건.", loc:"include/canvasos_vm.h", tags:"vm p9", keywords:"flag compare cmp jz jnz branch condition", values:"0=equal, nonzero=not equal", channel:"G"},
+  {kind:"field", key:"VmState.call_stack[32]", group:"Phase9", desc:"리턴 주소 스택. CALL 명령 시 현재 pc_y 저장, RET 시 복원. 최대 32 깊이.", loc:"include/canvasos_vm.h", tags:"vm p9", keywords:"call stack ret return address subroutine depth", values:"u32[32]", channel:"A"},
+  {kind:"field", key:"VmState.tick_limit", group:"Phase9", desc:"최대 실행 tick 수. 무한루프 방지. 0이면 무제한.", loc:"include/canvasos_vm.h", tags:"vm p9", keywords:"tick limit infinite loop guard", values:"u32, 0=unlimited", channel:"G"},
+  {kind:"func", key:"vm_step(ctx, vm)", group:"Phase9", desc:"Fetch-Decode-Execute 1사이클. 셀 읽기(FETCH) → ABGR 분리(DECODE) → B 채널 dispatch(EXECUTE) → pc_y++.", loc:"src/vm.c", tags:"vm p9", keywords:"vm step fetch decode execute cycle cell B dispatch", values:"returns: int (0=ok)", channel:"A,B,G,R"},
+  {kind:"func", key:"vm_run(ctx, vm)", group:"Phase9", desc:"vm.running=true인 동안 vm_step 연속 실행. tick_limit 초과 시 종료.", loc:"src/vm.c", tags:"vm p9", keywords:"vm run loop continuous tick limit halt", values:"returns: int (exit tick)", channel:"A,B,G,R"},
+  {kind:"func", key:"vm_trace(ctx, vm)", group:"Phase9", desc:"trace 모드 실행. 매 셀마다 'pc=(x,y) B=XX G=YY R=ZZ' 출력.", loc:"src/vm.c", tags:"vm p9", keywords:"vm trace debug print cell step output", values:"returns: int", channel:"A,B,G,R"},
+
+  /* ── Group: Phase9 — B Channel Opcodes ── */
+  {kind:"opcode", key:"B=0x00 NOP", group:"Phase9", desc:"아무 동작 없음. 프로그램 끝 마커로 사용.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"nop no op halt end program", values:"B=0x00", channel:"B"},
+  {kind:"opcode", key:"B=0x01 PRINT", group:"Phase9", desc:"R 채널 값을 stdout에 문자로 출력. R=문자 코드.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"print output stdout char R channel", values:"B=0x01, R=char code", channel:"B,R"},
+  {kind:"opcode", key:"B=0x02 HALT", group:"Phase9", desc:"VM 실행 중지. vm.running=false.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"halt stop running false", values:"B=0x02", channel:"B"},
+  {kind:"opcode", key:"B=0x03 SET", group:"Phase9", desc:"A 주소 셀에 G,R 채널 기록. A=대상 좌표, G=새 G값, R=새 R값.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"set write cell A address G R value", values:"B=0x03, A=dest, G=gval, R=rval", channel:"B,A,G,R"},
+  {kind:"opcode", key:"B=0x04 COPY", group:"Phase9", desc:"A 주소 셀을 A+arg 위치로 복사. A=원본, G=대상 offset.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"copy cell A source G offset dest", values:"B=0x04, A=src, G=dest_offset", channel:"B,A,G"},
+  {kind:"opcode", key:"B=0x05 ADD", group:"Phase9", desc:"A 주소 셀의 G += R. A=대상, R=가산값.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"add arithmetic G R increment", values:"B=0x05, A=target, R=addval", channel:"B,A,G,R"},
+  {kind:"opcode", key:"B=0x06 SUB", group:"Phase9", desc:"A 주소 셀의 G -= R. A=대상, R=감산값.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"sub subtract arithmetic G R decrement", values:"B=0x06, A=target, R=subval", channel:"B,A,G,R"},
+  {kind:"opcode", key:"B=0x07 CMP", group:"Phase9", desc:"A 주소 셀의 G와 R 비교 → flag 설정. flag=0(같음), !=0(다름).", loc:"src/vm.c", tags:"vm opcode p9", keywords:"cmp compare G R flag condition branch", values:"B=0x07, A=target, R=cmpval", channel:"B,A,G,R"},
+  {kind:"opcode", key:"B=0x08 JMP", group:"Phase9", desc:"PC를 A 주소로 무조건 점프. A=y*1024+x 형식의 절대 좌표.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"jmp jump branch unconditional pc A address", values:"B=0x08, A=dest_addr", channel:"B,A"},
+  {kind:"opcode", key:"B=0x09 JZ", group:"Phase9", desc:"flag==0(이전 CMP 결과 같음)이면 A 주소로 점프.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"jz jump zero flag equal conditional branch", values:"B=0x09, A=dest_addr", channel:"B,A"},
+  {kind:"opcode", key:"B=0x0A JNZ", group:"Phase9", desc:"flag!=0(이전 CMP 결과 다름)이면 A 주소로 점프.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"jnz jump not zero flag not equal conditional branch", values:"B=0x0A, A=dest_addr", channel:"B,A"},
+  {kind:"opcode", key:"B=0x0B CALL", group:"Phase9", desc:"현재 pc_y를 call_stack에 저장 후 A 주소로 점프. 서브루틴 호출.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"call subroutine push stack A address", values:"B=0x0B, A=subroutine_addr", channel:"B,A"},
+  {kind:"opcode", key:"B=0x0C RET", group:"Phase9", desc:"call_stack에서 리턴 주소 pop → PC 복원. 서브루틴 반환.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"ret return pop stack call subroutine", values:"B=0x0C", channel:"B"},
+  {kind:"opcode", key:"B=0x0D LOAD", group:"Phase9", desc:"A 주소 셀의 채널값을 레지스터로 로드.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"load register A address cell fetch memory", values:"B=0x0D, A=src_addr", channel:"B,A"},
+  {kind:"opcode", key:"B=0x0E STORE", group:"Phase9", desc:"현재 레지스터 G,R 값을 A 주소 셀에 저장.", loc:"src/vm.c", tags:"vm opcode p9", keywords:"store register A address cell write memory", values:"B=0x0E, A=dest_addr", channel:"B,A"},
+  {kind:"opcode", key:"B=0x10 GATE_ON", group:"Phase9", desc:"A 주소(tile_id)의 타일 게이트 OPEN.", loc:"src/vm.c", tags:"vm opcode p9 gate", keywords:"gate on open tile A id", values:"B=0x10, A=tile_id", channel:"B,A"},
+  {kind:"opcode", key:"B=0x11 GATE_OFF", group:"Phase9", desc:"A 주소(tile_id)의 타일 게이트 CLOSE.", loc:"src/vm.c", tags:"vm opcode p9 gate", keywords:"gate off close tile A id", values:"B=0x11, A=tile_id", channel:"B,A"},
+  {kind:"opcode", key:"B=0x20 SEND", group:"Phase9", desc:"파이프 A에 R 채널 데이터 전송. A=pipe_id, R=데이터.", loc:"src/vm.c", tags:"vm opcode p9 ipc", keywords:"send pipe ipc data A pipe_id R", values:"B=0x20, A=pipe_id, R=data", channel:"B,A,R"},
+  {kind:"opcode", key:"B=0x21 RECV", group:"Phase9", desc:"파이프 A에서 R 채널로 데이터 수신. A=pipe_id.", loc:"src/vm.c", tags:"vm opcode p9 ipc", keywords:"recv pipe ipc data A pipe_id R", values:"B=0x21, A=pipe_id", channel:"B,A,R"},
+  {kind:"opcode", key:"B=0x30 SPAWN", group:"Phase9", desc:"새 프로세스 생성. A=코드 타일 번호, G=초기 에너지.", loc:"src/vm.c", tags:"vm opcode p9 proc", keywords:"spawn process create fork A tile G energy", values:"B=0x30, A=code_tile, G=energy", channel:"B,A,G"},
+  {kind:"opcode", key:"B=0x31 EXIT", group:"Phase9", desc:"프로세스 종료. G=exit code.", loc:"src/vm.c", tags:"vm opcode p9 proc", keywords:"exit process terminate G exit_code", values:"B=0x31, G=exit_code", channel:"B,G"},
+  {kind:"opcode", key:"B=0x40 DRAW", group:"Phase9", desc:"A 주소 셀에 R 색상 직접 기록. 캔버스 그리기 명령.", loc:"src/vm.c", tags:"vm opcode p9 draw", keywords:"draw color R A address cell canvas", values:"B=0x40, A=dest, R=color", channel:"B,A,R"},
+  {kind:"opcode", key:"B=0x41 LINE", group:"Phase9", desc:"A→G 사이 직선 그리기. A=시작 좌표, G=끝 좌표, R=색상.", loc:"src/vm.c", tags:"vm opcode p9 draw", keywords:"line draw start end A G R color canvas", values:"B=0x41, A=start, G=end, R=color", channel:"B,A,G,R"},
+  {kind:"opcode", key:"B=0x42 RECT", group:"Phase9", desc:"사각형 그리기. A=좌상단, G=w|h 크기, R=색상.", loc:"src/vm.c", tags:"vm opcode p9 draw", keywords:"rect rectangle draw A topleft G size R color canvas", values:"B=0x42, A=topleft, G=w|h, R=color", channel:"B,A,G,R"},
+  {kind:"opcode", key:"B=0xFE SYSCALL", group:"Phase9", desc:"시스템 콜. A=syscall_nr, G=arg0, R=arg1. Phase-8 syscall 테이블과 연동.", loc:"src/vm.c", tags:"vm opcode p9 syscall", keywords:"syscall B=FE A syscall_nr G R args kernel", values:"B=0xFE, A=syscall_nr, G=arg0, R=arg1", channel:"B,A,G,R"},
+  {kind:"opcode", key:"B=0xFF BREAKPOINT", group:"Phase9", desc:"디버거 중단점. trace 모드에서 실행 일시 정지.", loc:"src/vm.c", tags:"vm opcode p9 debug", keywords:"breakpoint debug halt trace debugger", values:"B=0xFF", channel:"B"},
+
+  /* ── Group: Phase9 — WH opcodes ── */
+  {kind:"opcode", key:"WH_OP_VM_START = 0x90", group:"Phase9", desc:"WH ring에 VM 실행 시작 이벤트 기록.", loc:"include/canvasos_opcodes.h", tags:"vm wh opcode p9", keywords:"wh vm start record audit", values:"0x90", channel:"B"},
+  {kind:"opcode", key:"WH_OP_VM_HALT = 0x91", group:"Phase9", desc:"WH ring에 VM 실행 중지 이벤트 기록.", loc:"include/canvasos_opcodes.h", tags:"vm wh opcode p9", keywords:"wh vm halt stop record", values:"0x91", channel:"B"},
+  {kind:"opcode", key:"WH_OP_VM_STEP = 0x92", group:"Phase9", desc:"WH ring에 VM 1 step 이벤트 기록.", loc:"include/canvasos_opcodes.h", tags:"vm wh opcode p9", keywords:"wh vm step tick record", values:"0x92", channel:"B"},
+  {kind:"opcode", key:"WH_OP_VM_BREAKPOINT = 0x93", group:"Phase9", desc:"WH ring에 VM 중단점 도달 이벤트 기록.", loc:"include/canvasos_opcodes.h", tags:"vm wh opcode p9 debug", keywords:"wh vm breakpoint debug halt record", values:"0x93", channel:"B"},
+
+  /* ── Group: PixelCode — Language Commands ── */
+  {kind:"helper", key:"PixelCode 연산자", group:"PixelCode", desc:"PixelCode 명령 문법. [채널][연산자][값] 조합. = (설정), + (증가), - (감소), ~ (반복), @ (주소이동), ! (커밋), ? (조회), > (이동), < (역이동), # (범위).", loc:"include/canvasos_pixelcode.h src/pixelcode.c", tags:"pxlc p9", keywords:"pixelcode operator set add sub repeat addr commit query step back range A B G R channel", values:"=, +, -, ~, @, !, ?, >, <, #", channel:"A,B,G,R"},
+  {kind:"helper", key:"A=HHHHHHHH (셀 편집)", group:"PixelCode", desc:"A 채널에 32bit hex 값 설정. 왼손 약지 역할. A=00010000 형식.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"A channel set hex 32bit cell edit typewriter", values:"A=HHHHHHHH", channel:"A"},
+  {kind:"helper", key:"B=HH (셀 편집)", group:"PixelCode", desc:"B 채널에 8bit hex 값 설정. opcode 지정. B=01(PRINT), B=02(HALT) 등.", loc:"src/pixelcode.c", tags:"pxlc p9 opcode", keywords:"B channel set hex 8bit opcode instruction cell", values:"B=HH (0x00~0xFF)", channel:"B"},
+  {kind:"helper", key:"G=DDD (셀 편집)", group:"PixelCode", desc:"G 채널에 decimal 값 설정. G=100 형식.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"G channel set decimal 8bit cell state energy", values:"G=DDD (0~255)", channel:"G"},
+  {kind:"helper", key:"R=HH or R='C' (셀 편집)", group:"PixelCode", desc:"R 채널에 hex 또는 문자 설정. R=48 또는 R='H'. 오른손 약지 역할.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"R channel set hex char data stream typewriter", values:"R=HH or R='C'", channel:"R"},
+  {kind:"helper", key:"! (커밋)", group:"PixelCode", desc:"현재 레지스터(ABGR)를 캔버스 셀에 기록. 커밋 후 Y↓ 자동 이동. 타자기 엔터키처럼 작동.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"commit write cell Y down advance carriage return", values:"!", channel:"A,B,G,R"},
+  {kind:"helper", key:"!!N (반복 커밋)", group:"PixelCode", desc:"현재 레지스터를 N번 반복 커밋. Y축으로 N개 셀에 같은 값 기록.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"repeat commit N times fill Y axis", values:"!!N", channel:"A,B,G,R"},
+  {kind:"helper", key:"!# (범위 채우기)", group:"PixelCode", desc:"선택된 범위(#로 지정) 전체를 현재 레지스터로 채우기. 스탬프처럼 동작.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"fill range stamp area commit", values:"!#", channel:"A,B,G,R"},
+  {kind:"helper", key:"@(x,y) (절대 이동)", group:"PixelCode", desc:"커서를 (x,y) 좌표로 절대 이동.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"at cursor move absolute x y coordinate", values:"@(x,y)", channel:"A"},
+  {kind:"helper", key:">N / <N / vN / ^N (커서 이동)", group:"PixelCode", desc:"커서 상대 이동. > 오른쪽, < 왼쪽, v 아래, ^ 위. N칸 이동.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"cursor move right left down up N step relative", values:">N, <N, v N, ^ N", channel:"A"},
+  {kind:"helper", key:"@wh / @bh / @home (특수 이동)", group:"PixelCode", desc:"특수 위치로 커서 이동. @wh=WH시작, @bh=BH시작, @home=(512,512) 중심.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"wh bh home special position cursor move center", values:"@wh, @bh, @home", channel:"A"},
+  {kind:"helper", key:"#(x0,y0)~(x1,y1) (범위 선택)", group:"PixelCode", desc:"사각 영역 지정. 피아노 코드 잡기처럼 범위 선택. fill/copy/clear/hash/count와 조합.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"range select area rectangle region fill copy clear hash count", values:"#(x0,y0)~(x1,y1)", channel:"A"},
+  {kind:"helper", key:"#fill / #copy / #clear / #hash / #count", group:"PixelCode", desc:"범위 조작 명령. fill=현재 레지스터로 채우기, copy=다른 위치로 복사, clear=0으로 초기화, hash=영역 해시, count=활성 셀 수.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"fill copy clear hash count range area region operation", values:"#fill, #copy @(dx,dy), #clear, #hash, #count", channel:"A,B,G,R"},
+  {kind:"helper", key:"R=\"...\" / R=[hex] (스트림)", group:"PixelCode", desc:"문자열이나 hex 배열을 Y축으로 수직 적층. 피아노 아르페지오처럼 시간축으로 배치.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"string hex array stream Y axis stack sequential data", values:"R=\"HELLO\", R=[48 45 4C 4C 4F]", channel:"R"},
+  {kind:"helper", key:"B=[...] ~N (패턴 반복)", group:"PixelCode", desc:"채널 배열을 N번 반복 적층. B=[01 02 03] ~3 형식.", loc:"src/pixelcode.c", tags:"pxlc p9", keywords:"pattern repeat loop array N times B G R channel", values:"B=[01 02 03] ~N", channel:"B"},
+  {kind:"helper", key:"run / stop / step / watch / trace (VM 제어)", group:"PixelCode", desc:"VM 실행 제어. run=Y축 방향 연속 실행, stop=중지, step=1tick, step N=N tick, watch=미니맵 갱신, trace=매 셀 출력.", loc:"src/pixelcode.c", tags:"pxlc p9 vm", keywords:"run stop step watch trace vm execute tick debug minimap", values:"run, run @(x,y) ~N, stop, step, step N, watch, trace", channel:"A,B,G,R"},
+  {kind:"helper", key:"gate / save / load / hash / timewarp / det (시스템)", group:"PixelCode", desc:"PixelCode 시스템 명령. gate=타일 게이트 제어, save/load=CVP 저장·로드, hash=캔버스 해시, timewarp=시간여행, det=결정론 토글.", loc:"src/pixelcode.c", tags:"pxlc p9 system", keywords:"gate open close save load cvp hash timewarp det system command", values:"gate N, gate -N, save [file], load [file], hash, timewarp N, det on/off", channel:"A,B,G,R"},
+
+  /* ── Group: Docs ── */
+  {kind:"doc", key:"TODO_PHASE9_PIXELCODE_VM", group:"Docs", desc:"Phase-9 PixelCode VM 전체 설계 문서. 실행 철학(타자기·피아노·오르골), PixelCode 문법, B채널 명령어 세트, VM 실행 모델, 터미널 UI, HELLO 예시, Task 목록(T9-01~T9-15), 의존성, 완료 조건 수록.", loc:"TODO_PHASE9_PIXELCODE_VM", tags:"docs p9", keywords:"phase9 pixelcode vm state register opcode instruction fetch decode execute terminal minimap ncurses ABGR typewriter piano orgel HELLO example"},
+];
+
+const ARCH_MAP = [
+  {n:"Q0",      i:"(0,0)→(511,511)",       c:"dim",  s:""},
+  {n:"Q1",      i:"(512,0)→(1023,511)",    c:"dim",  s:""},
+  {n:"CTRL",    i:"CR0..CR3 kernel",       c:"ctrl", s:"Control Region"},
+  {n:"CVP",     i:"header+TLV 8.5MB",      c:"cvp",  s:"CVP"},
+  {n:"Q2",      i:"(0,512)→(511,639)",     c:"dim",  s:""},
+  {n:"VM-PC",   i:"pc_x/pc_y 실행 흐름",   c:"p5",   s:"Phase9"},
+  {n:"WH",      i:"(512,512) 512×128",     c:"wh",   s:"WH"},
+  {n:"BH",      i:"(512,640) 512×64",      c:"bh",   s:"BH"},
+  {n:"Q3",      i:"(0,704)→(511,1023)",    c:"dim",  s:""},
+  {n:"PXLC",    i:"PixelCode 파서",         c:"p5",   s:"Phase9"},
+  {n:"BH-C",    i:"BH compress IDLE/LOOP/BURST", c:"bh", s:"[BH]"},
+  {n:"DK-1",    i:"Tick Boundary rule",    c:"p5",   s:"DK-1"},
+  {n:"CVP§",    i:"TLV SEC 1..5",          c:"cvp",  s:"CVP_SECTIONS"},
+];
+
+const CAP = [
+  {v:"1024×1024", l:"VM 실행 공간"},
+  {v:"32",        l:"콜스택 깊이"},
+  {v:"25+",       l:"VM 명령어"},
+  {v:"20+",       l:"P9 테스트"},
+];
+
+/* ── state ── */
+let activeTab = "Home";
+let dbt;
+
+/* ── helpers ── */
+function esc(s){
+  return (s||'').replace(/[&<>"']/g, c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function chBadges(ch){
+  if(!ch) return '';
+  return [...new Set((ch||'').split(/[,\s]+/).filter(x=>x))]
+    .filter(x=>['A','B','G','R'].includes(x))
+    .map(x=>`<span class="badge ${x}">${x}</span>`).join('');
+}
+
+function groupColor(g){
+  const m={
+    'Core':'gCore','Engine':'gEngine','Filesystem':'gFilesystem',
+    'I/O':'gIO','IO':'gIO','Docs':'gDocs','Phase5':'gPhase5',
+    'VM':'gVM','PixelCode':'gPixelCode','Phase9':'gPhase9'
+  };
+  return m[g]||'gCore';
+}
+
+/* ── arch map ── */
+(function(){
+  const el = document.getElementById('arch-map');
+  el.className = 'arch-map';
+  ARCH_MAP.forEach(t=>{
+    const d = document.createElement('div');
+    d.className=`am ${t.c}${t.s?' click':''}`;
+    d.innerHTML=`<div class="am-name">${t.n}</div><div class="am-info">${t.i}</div>`;
+    if(t.s) d.onclick=()=>doSearch(t.s);
+    el.appendChild(d);
+  });
+})();
+
+/* ── cap bar ── */
+(function(){
+  const el = document.getElementById('cap-bar');
+  el.className = 'cap-bar';
+  CAP.forEach((c,i)=>{
+    if(i) el.insertAdjacentHTML('beforeend','<span class="cap-sep">·</span>');
+    el.insertAdjacentHTML('beforeend',
+      `<div class="cap-item"><div class="cap-val">${c.v}</div><div class="cap-label">${c.l}</div></div>`);
+  });
+})();
+
+/* ── card render ── */
+function cardHTML(item, idx){
+  const isDoc = item.kind === 'doc';
+  const isP5  = item.group === 'Phase5';
+  const isP9  = item.group === 'Phase9';
+  const gc = groupColor(item.group||'Core');
+
+  let grpBadge;
+  if(isP9)       grpBadge = `<span class="badge p9b">P9</span>`;
+  else if(isP5)  grpBadge = `<span class="badge p5b">P5</span>`;
+  else if(isDoc) grpBadge = `<span class="badge dob">DOC</span>`;
+  else grpBadge = `<span class="badge grp">${esc(item.group||'')}</span>`;
+
+  const kindBadge = `<span class="badge">${esc(item.kind||'').toUpperCase()}</span>`;
+  const chB = chBadges(item.channel||'');
+
+  /* keywords as clickable pills */
+  const kws = (item.keywords||'').split(/\s+/).filter(Boolean).slice(0,12);
+  const kwH = kws.map(k=>`<span class="kw" onclick="doSearch('${k}')">${k}</span>`).join('');
+
+  /* doc body preview */
+  const docPreview = isDoc && item.desc
+    ? `<div class="doc-body">${esc(item.desc.substring(0,500))}</div>`
+    : '';
+
+  return `<div class="card ${gc}" id="c${idx}" style="animation-delay:${Math.min(idx*.02,.25)}s">
+    <div class="head" onclick="toggle(${idx})">
+      <div class="key">${esc(item.key)}</div>
+      ${grpBadge}${kindBadge}${chB}
+      <div class="chev">▶</div>
+    </div>
+    <div class="body">
+      <p class="desc">${esc(item.desc||'')}</p>
+      ${docPreview}
+      <div class="grid">
+        <div class="k">LOCATION</div><div class="v">${esc(item.loc||'')}</div>
+        ${item.values?`<div class="k">VALUES</div><div class="v">${esc(item.values)}</div>`:''}        ${item.tags?`<div class="k">TAGS</div><div class="v">${esc(item.tags)}</div>`:''}        ${kwH?`<div class="k">KEYWORDS</div><div class="v">${kwH}</div>`:''}      </div>
+    </div>
+  </div>`;
+}
+
+/* ── scoring ── */
+function score(item, toks){
+  if(!toks.length) return 1;
+  const hay = [item.key,item.desc,item.loc,item.values||'',
+                item.tags||'',item.keywords||'',item.group||'',item.kind||''].join(' ').toLowerCase();
+  let hit=0;
+  for(const t of toks) if(hay.includes(t)) hit++;
+  return hit/toks.length;
+}
+
+/* ── render ── */
+function render(){
+  const q = document.getElementById('search').value.trim();
+  const toks = q.toLowerCase().split(/\s+/).filter(Boolean);
+
+  let items = DATA;
+
+  /* tab filter */
+  if(activeTab==='Home'){
+    /* 전체 — arch map, cap bar 표시 */
+    document.getElementById('arch-map').style.display='';
+    document.getElementById('cap-bar').style.display='';
+  } else {
+    document.getElementById('arch-map').style.display='none';
+    document.getElementById('cap-bar').style.display='none';
+  }
+
+  if(activeTab==='Phase9-VM')          items=items.filter(x=>x.tags&&x.tags.includes('vm'));
+  else if(activeTab==='Phase9-Opcode') items=items.filter(x=>x.tags&&x.tags.includes('opcode'));
+  else if(activeTab==='Phase9-PixelCode') items=items.filter(x=>x.tags&&x.tags.includes('pxlc'));
+  else if(activeTab==='Phase9')        items=items.filter(x=>x.group==='Phase9');
+  else if(activeTab==='Docs')          items=items.filter(x=>x.group==='Docs');
+  else if(activeTab.startsWith('Docs-')){
+    const dk=activeTab.replace('Docs-','');
+    items=items.filter(x=>x.group==='Docs'&&(x.loc||'').startsWith(dk));
+  }
+  else if(activeTab!=='Home') items=items.filter(x=>(x.group||'')==activeTab);
+
+  if(toks.length){
+    items=items.map(x=>{return {x,s:score(x,toks)}})
+               .filter(o=>o.s>0)
+               .sort((a,b)=>b.s-a.s)
+               .map(o=>o.x);
+  }
+
+  const meta=document.getElementById('meta');
+  const tabColor=activeTab.startsWith('Docs')?'hi2':'hi';
+  meta.innerHTML=toks.length
+    ?`<span class="hi">${items.length}</span> results · "<span class="hi">${esc(q)}</span>" · tab=<span class="${tabColor}">${esc(activeTab)}</span>`
+    :`<span class="hi">${items.length}</span> entries · tab=<span class="${tabColor}">${esc(activeTab)}</span>`;
+
+  const cards=document.getElementById('cards');
+  if(!items.length){
+    cards.innerHTML=`<div class="empty">검색 결과 없음: "<em>${esc(q)}</em>" — 시도: VmState, vm_step, HALT, PixelCode, B=0x01, PRINT</div>`;
+    return;
+  }
+  cards.innerHTML=items.map((x,i)=>cardHTML(x,i)).join('');
+}
+
+function toggle(i){document.getElementById('c'+i)?.classList.toggle('open');}
+function doSearch(kw){
+  document.getElementById('search').value=kw;
+  render();
+}
+
+/* ── nav ── */
+document.querySelectorAll('.nav button[data-tab]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    activeTab=b.dataset.tab;
+    render();
+  });
+});
+document.getElementById('search').addEventListener('input',()=>{clearTimeout(dbt);dbt=setTimeout(render,120);});
+render();
+</script>
+</body>
+</html>
