@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SJ CANVAS OS · DevDictionary Phase 10</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+:root{
+  --bg:#060809;
+  --panel:#0b0e12;
+  --panel2:#111417;
+  --border:#1a1e26;
+  --border2:#22272f;
+  --dim:#343b48;
+  --muted:#52596a;
+  --text:#b8c0d4;
+  --bright:#dde4f4;
+  --A:rgba(255,200,80,1);
+  --B:rgba(255,100,100,1);
+  --G:rgba(80,240,150,1);
+  --R:rgba(80,160,255,1);
+  --accent:#3ef5c0;
+  --p5:#b060ff;
+  --p10:#40ff80;
+  --doc:#f0a030;
+  --scan:rgba(62,245,192,0.015);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:13.5px; line-height:1.65;
+  min-height:100vh; overflow:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,var(--scan) 0,var(--scan) 1px,transparent 1px,transparent 3px);
+  pointer-events:none; z-index:0;
+}
+
+.app{position:relative;z-index:1;display:flex;height:100vh;}
+
+/* ── sidebar ── */
+.sidebar{
+  width:250px; background:var(--panel);
+  border-right:1px solid var(--border);
+  padding:16px 12px;
+  display:flex; flex-direction:column; gap:10px;
+  overflow-y:auto;
+}
+.brand{
+  padding:10px 10px 12px;
+  border:1px solid var(--border);
+  background:rgba(62,245,192,.03);
+  flex-shrink:0;
+}
+.brand .tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--accent);
+}
+.brand .title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:17px; font-weight:700; color:var(--bright);
+}
+.brand .sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
+
+.sep{height:1px; background:var(--border); flex-shrink:0;}
+
+.nav{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+.nav-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--dim); padding:4px 8px 2px;
+}
+.nav button{
+  width:100%; text-align:left; padding:8px 10px;
+  background:transparent; border:1px solid var(--border2);
+  color:var(--text); cursor:pointer;
+  font-family:'JetBrains Mono',monospace; font-size:10.5px;
+  letter-spacing:.05em; transition:all .1s;
+}
+.nav button:hover{border-color:var(--accent);color:var(--bright);background:rgba(62,245,192,.03);}
+.nav button.active{border-color:var(--accent);color:var(--accent);background:rgba(62,245,192,.05);}
+.nav button.p5{border-color:rgba(176,96,255,.3);color:var(--p5);}
+.nav button.p5:hover{border-color:var(--p5);background:rgba(176,96,255,.04);}
+.nav button.p5.active{border-color:var(--p5);background:rgba(176,96,255,.07);}
+.nav button.p10{border-color:rgba(64,255,128,.3);color:var(--p10);}
+.nav button.p10:hover{border-color:var(--p10);background:rgba(64,255,128,.04);}
+.nav button.p10.active{border-color:var(--p10);background:rgba(64,255,128,.07);}
+.nav button.doc-tab{border-color:rgba(240,160,48,.25);color:var(--doc);}
+.nav button.doc-tab:hover{border-color:var(--doc);background:rgba(240,160,48,.04);}
+.nav button.doc-tab.active{border-color:var(--doc);background:rgba(240,160,48,.06);}
+
+.sidebar-footer{
+  margin-top:auto; padding-top:10px; border-top:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim);
+}
+
+/* ── main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+.topbar{
+  display:flex; align-items:center; gap:14px;
+  padding:0 18px; height:52px;
+  border-bottom:1px solid var(--border);
+  background:var(--panel); flex-shrink:0;
+}
+
+.arch-pills{display:flex;gap:6px;align-items:center;}
+.pill{
+  display:inline-flex; align-items:center; gap:5px;
+  padding:2px 8px; border:1px solid var(--border2);
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  color:var(--muted); white-space:nowrap;
+}
+.dot{width:7px;height:7px;}
+.dot.A{background:var(--A);}.dot.B{background:var(--B);}
+.dot.G{background:var(--G);}.dot.R{background:var(--R);}
+.dot.p10{background:var(--p10);}
+
+.sw{position:relative; flex:1; max-width:540px;}
+.sw .pfx{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--accent);
+  pointer-events:none;
+}
+#search{
+  width:100%; padding:9px 12px 9px 34px;
+  background:var(--panel2); border:1px solid var(--border2);
+  border-left:3px solid var(--accent);
+  color:var(--bright);
+  font-family:'JetBrains Mono',monospace; font-size:13px; outline:none;
+  transition:box-shadow .12s, border-color .12s;
+}
+#search:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(62,245,192,.12);}
+#search::placeholder{color:var(--dim);}
+
+.content{flex:1;overflow-y:auto;padding:14px 18px 40px;}
+.meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-bottom:12px;}
+.meta .hi{color:var(--accent);}
+.meta .hi2{color:var(--p10);}
+
+/* ── arch map ── */
+.arch-map{
+  display:grid; grid-template-columns:repeat(5,1fr); gap:2px;
+  margin-bottom:18px;
+  font-family:'JetBrains Mono',monospace; font-size:8.5px;
+}
+.am{
+  padding:8px 9px; border:1px solid var(--border2);
+  cursor:default; transition:all .11s;
+}
+.am.click{cursor:pointer;}
+.am.click:hover{background:rgba(62,245,192,.03);border-color:var(--accent);}
+.am-name{font-weight:700;margin-bottom:1px;}
+.am-info{color:var(--dim);font-size:8px;}
+.am.wh .am-name{color:#38b4ff;}
+.am.bh .am-name{color:#ff5566;}
+.am.ctrl .am-name{color:var(--muted);}
+.am.cvp .am-name{color:#ffdd40;}
+.am.p5 .am-name{color:var(--p5);}
+.am.p10 .am-name{color:var(--p10);}
+.am.dim .am-name{color:var(--dim);}
+
+/* ── canvas capacity bar ── */
+.cap-bar{
+  display:flex; gap:10px; align-items:center; margin-bottom:16px;
+  padding:10px 14px; border:1px solid var(--border);
+  background:var(--panel); font-family:'JetBrains Mono',monospace; font-size:9.5px;
+}
+.cap-item{display:flex;flex-direction:column;gap:2px;}
+.cap-val{color:var(--accent);font-size:12px;font-weight:700;}
+.cap-label{color:var(--dim);font-size:8px;text-transform:uppercase;letter-spacing:.1em;}
+.cap-sep{color:var(--border2);margin:0 2px;}
+
+/* ── cards ── */
+.cards{display:flex;flex-direction:column;gap:2px;}
+
+.card{
+  background:var(--panel); border:1px solid var(--border);
+  border-left:3px solid transparent;
+  animation:fi .12s ease-out both;
+}
+@keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.card:hover{background:var(--panel2);}
+
+.card.gCore{border-left-color:#4a90d9;}
+.card.gEngine{border-left-color:var(--accent);}
+.card.gFilesystem{border-left-color:#50c88a;}
+.card.gIO{border-left-color:#ffdd40;}
+.card.gDocs{border-left-color:var(--doc);}
+.card.gPhase5{border-left-color:var(--p5);}
+.card.gUserland{border-left-color:#40ff80;}
+.card.gUtilities{border-left-color:#ffdd40;}
+.card.gShell{border-left-color:#ff9040;}
+.card.gPhase10{border-left-color:#40ff80;}
+
+.head{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 12px;cursor:pointer;user-select:none;
+}
+.key{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;font-weight:700;color:var(--bright);flex:1;
+}
+.badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;padding:1px 6px;border:1px solid var(--border2);
+  white-space:nowrap;
+}
+.badge.A{color:var(--A);border-color:rgba(255,200,80,.25);background:rgba(255,200,80,.05);}
+.badge.B{color:var(--B);border-color:rgba(255,100,100,.25);background:rgba(255,100,100,.05);}
+.badge.G{color:var(--G);border-color:rgba(80,240,150,.25);background:rgba(80,240,150,.05);}
+.badge.R{color:var(--R);border-color:rgba(80,160,255,.25);background:rgba(80,160,255,.05);}
+.badge.grp{color:var(--muted);}
+.badge.p5b{color:var(--p5);border-color:rgba(176,96,255,.3);background:rgba(176,96,255,.05);}
+.badge.p10b{color:var(--p10);border-color:rgba(64,255,128,.3);background:rgba(64,255,128,.05);}
+.badge.dob{color:var(--doc);border-color:rgba(240,160,48,.25);background:rgba(240,160,48,.05);}
+.chev{color:var(--dim);font-size:9px;font-family:monospace;transition:transform .12s;}
+.card.open .chev{transform:rotate(90deg);}
+
+.body{display:none;border-top:1px solid var(--border);padding:10px 12px 12px;}
+.card.open .body{display:block;}
+.desc{color:var(--text);font-size:13px;line-height:1.75;margin-bottom:10px;}
+.grid{display:grid;grid-template-columns:80px 1fr;gap:3px 8px;}
+.k{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;padding-top:2px;}
+.v{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);line-height:1.9;}
+.kw{
+  display:inline-block;background:var(--panel2);
+  border:1px solid var(--border2);padding:0 5px;margin:1px 2px;
+  color:var(--accent);font-size:9px;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;transition:border-color .1s;
+}
+.kw:hover{border-color:var(--accent);}
+
+.doc-body{
+  background:var(--panel2);border:1px solid var(--border);
+  padding:10px 12px;margin-top:8px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--dim);line-height:1.8;white-space:pre-wrap;word-break:break-word;
+}
+
+.empty{
+  padding:48px 0;text-align:center;
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);
+}
+.empty em{color:var(--accent);font-style:normal;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- sidebar -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="tag">SJCANVOS</div>
+    <div class="title">DevDictionary</div>
+    <div class="sub">Phase 10 · ~80 entries · Userland on PixelCode</div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-label">Core</div>
+    <button data-tab="Home" class="active">◈ 전체 (Home)</button>
+    <button data-tab="Userland">⬡ Userland</button>
+    <button data-tab="Utilities">⬡ Utilities</button>
+    <button data-tab="Shell">⬡ Shell</button>
+  </div>
+
+  <div class="sep"></div>
+
+  <div class="nav">
+    <div class="nav-label">Phase 10</div>
+    <button data-tab="Phase10" class="p10">⬡ Phase 10 전체</button>
+    <button data-tab="Phase10-FD" class="p10">⬡ [FD] 파일디스크립터</button>
+    <button data-tab="Phase10-Path" class="p10">⬡ [PATH] 경로 탐색</button>
+    <button data-tab="Phase10-Shell" class="p10">⬡ [SHELL] 셸</button>
+    <button data-tab="Phase10-User" class="p10">⬡ [USER] 사용자/권한</button>
+    <button data-tab="Phase10-Utils" class="p10">⬡ [UTILS] 유틸리티</button>
+  </div>
+
+  <div class="sep"></div>
+
+  <div class="nav">
+    <div class="nav-label">문서 본문 검색</div>
+    <button data-tab="Docs" class="doc-tab">📄 Docs</button>
+    <button data-tab="Docs-TODO_PHASE10_USERLAND" class="doc-tab">└ Phase 10 Plan</button>
+  </div>
+
+  <div class="sidebar-footer">
+    canvasos · phase10<br>
+    부산, 대한민국
+  </div>
+</aside>
+
+<!-- main -->
+<section class="main">
+  <div class="topbar">
+    <div class="arch-pills">
+      <span class="pill"><span class="dot A"></span>A=Where</span>
+      <span class="pill"><span class="dot B"></span>B=What</span>
+      <span class="pill"><span class="dot G"></span>G=State</span>
+      <span class="pill"><span class="dot R"></span>R=Stream</span>
+      <span class="pill"><span class="dot p10"></span>P10</span>
+    </div>
+    <div class="sw">
+      <span class="pfx">›</span>
+      <input id="search" type="text" autocomplete="off" spellcheck="false"
+        placeholder="심볼·함수·개념·문서 본문 통합 검색 — SYS_OPEN, fd, path_resolve, shell, login …">
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="meta" id="meta"></div>
+    <div id="arch-map"></div>
+    <div id="cap-bar"></div>
+    <div class="cards" id="cards"></div>
+  </div>
+</section>
+</div>
+
+<script>
+/* ── DATA ── */
+const DATA = [
+/* ─── Group: Phase10 · File Descriptor ─── */
+{kind:"helper", key:"B=FE A=SYS_OPEN G=flags R=path_slot", group:"Phase10",
+ desc:"VM에서 파일 열기. SYS_OPEN(0x10) 시스템 콜. 결과 fd를 레지스터에 저장.",
+ loc:"src/fd.c include/canvasos_syscall.h", tags:"fd p10",
+ keywords:"fd open file syscall SYS_OPEN path flags VM B=FE",
+ values:"B=0xFE, A=0x10(SYS_OPEN), G=flags, R=path_slot → fd", channel:"B,A,G,R"},
+
+{kind:"helper", key:"B=FE A=SYS_READ G=fd R=len", group:"Phase10",
+ desc:"VM에서 파일 읽기. SYS_READ(0x11) 시스템 콜. buf에 읽기.",
+ loc:"src/fd.c include/canvasos_syscall.h", tags:"fd p10",
+ keywords:"fd read file syscall SYS_READ VM B=FE",
+ values:"B=0xFE, A=0x11(SYS_READ), G=fd, R=len", channel:"B,A,G,R"},
+
+{kind:"helper", key:"B=FE A=SYS_WRITE G=fd R=len", group:"Phase10",
+ desc:"VM에서 파일 쓰기. SYS_WRITE(0x12) 시스템 콜. buf에서 쓰기.",
+ loc:"src/fd.c include/canvasos_syscall.h", tags:"fd p10",
+ keywords:"fd write file syscall SYS_WRITE VM B=FE",
+ values:"B=0xFE, A=0x12(SYS_WRITE), G=fd, R=len", channel:"B,A,G,R"},
+
+{kind:"helper", key:"B=FE A=SYS_CLOSE G=fd", group:"Phase10",
+ desc:"VM에서 파일 닫기. SYS_CLOSE(0x13) 시스템 콜.",
+ loc:"src/fd.c include/canvasos_syscall.h", tags:"fd p10",
+ keywords:"fd close syscall SYS_CLOSE VM B=FE",
+ values:"B=0xFE, A=0x13(SYS_CLOSE), G=fd", channel:"B,A,G"},
+
+{kind:"helper", key:"PixelCode fd 문법 (사용자용)", group:"Phase10",
+ desc:"PixelCode에서 파일 접근 고수준 문법. open/read/write/close 명령 제공.",
+ loc:"src/pixelcode.c src/fd.c", tags:"fd p10 pxlc",
+ keywords:"open read write close fd file pixelcode syntax user",
+ values:"open \"/data/f\" > $fd, read $fd 10 > $buf, write $fd \"DATA\", close $fd", channel:"R"},
+
+{kind:"const", key:"fd=0/1/2 예약 (stdin/stdout/stderr)", group:"Phase10",
+ desc:"표준 fd 할당. 파이프 리다이렉션 시 fd_dup으로 대체.",
+ loc:"include/canvasos_fd.h", tags:"fd p10",
+ keywords:"stdin stdout stderr fd 0 1 2 standard reserved pipe redirect",
+ values:"fd=0:stdin, fd=1:stdout, fd=2:stderr", channel:"R"},
+
+{kind:"func", key:"fd_dup(old_fd, new_fd)", group:"Phase10",
+ desc:"fd 복제. old_fd의 파일 테이블 엔트리를 new_fd로 복사. 파이프 리다이렉션에 사용.",
+ loc:"src/fd.c include/canvasos_fd.h", tags:"fd p10",
+ keywords:"fd dup duplicate pipe redirect stdin stdout clone",
+ values:"fd_dup(1, saved_stdout) → 파이프 설정", channel:"B,R"},
+
+/* ─── Group: Phase10 · Path Resolution ─── */
+{kind:"helper", key:"특수 경로 /wh /bh /dev /proc", group:"Phase10",
+ desc:"CanvasOS 가상 경로. /wh=WhiteHole 영역, /bh=BlackHole 영역, /dev=디바이스, /proc=프로세스 정보 가상 FS.",
+ loc:"src/path.c", tags:"path p10",
+ keywords:"wh bh dev proc virtual path special canvasos filesystem",
+ values:"/wh, /bh, /dev, /proc", channel:"A"},
+
+{kind:"helper", key:"/proc 가상 파일시스템", group:"Phase10",
+ desc:"/proc/pid/status → 프로세스 상태 문자열. /proc/self → 현재 프로세스. 읽기 전용 가상 FS.",
+ loc:"src/path.c", tags:"path p10",
+ keywords:"proc virtual fs pid status running energy lane self",
+ values:"/proc/0/status → \"RUNNING energy=255 lane=0\", /proc/self", channel:"A,R"},
+
+{kind:"helper", key:"~ (홈 경로)", group:"Phase10",
+ desc:"사용자 홈 타일 경로. Lane별 home_tile로 resolve. cd ~ → 홈으로 이동.",
+ loc:"src/path.c", tags:"path p10 user",
+ keywords:"home tilde user lane tile home_tile",
+ values:"~ → user home_tile", channel:"A"},
+
+{kind:"helper", key:"path_resolve 특수 규칙 (P10)", group:"Phase10",
+ desc:"P10에서 추가된 path_resolve 규칙. /proc 가상 FS, /sys/bin/ 유틸리티 경로, ~ 홈 확장.",
+ loc:"src/path.c", tags:"path p10",
+ keywords:"path resolve proc sys bin home special virtual",
+ values:"\"/\", \".\", \"..\", \"~\", \"/wh\", \"/bh\", \"/dev\", \"/proc\", \"/sys/bin\"", channel:"A"},
+
+{kind:"func", key:"path_ls(path)", group:"Phase10",
+ desc:"경로 하위 엔트리 열거. 타일 게이트 맵 순회 후 이름/타입 목록 반환.",
+ loc:"src/path.c include/canvasos_path.h", tags:"path p10",
+ keywords:"path ls list directory entries tile gate map",
+ values:"path_ls(\"/data\") → entry list", channel:"A,R"},
+
+{kind:"func", key:"path_mkdir(path)", group:"Phase10",
+ desc:"새 디렉터리 타일 생성. 부모 경로 게이트 업데이트. 권한 검사 포함.",
+ loc:"src/path.c include/canvasos_path.h", tags:"path p10",
+ keywords:"path mkdir make directory create tile gate parent",
+ values:"path_mkdir(\"/data/newdir\") → 0 on success", channel:"A"},
+
+{kind:"func", key:"path_rm(path)", group:"Phase10",
+ desc:"파일/디렉터리 제거. 게이트 CLOSE 후 슬롯 해제. 비어있지 않은 디렉터리 거부.",
+ loc:"src/path.c include/canvasos_path.h", tags:"path p10",
+ keywords:"path rm remove delete file directory gate close slot",
+ values:"path_rm(\"/data/file\") → 0 on success", channel:"A"},
+
+/* ─── Group: Shell · Phase 10 Shell Features ─── */
+{kind:"helper", key:"파이프 (shell)", group:"Shell",
+ desc:"셸 파이프. cmd1 | cmd2 → pipe_create(cmd1, cmd2) → cmd1.stdout → pipe → cmd2.stdin.",
+ loc:"src/shell.c", tags:"shell p10 pipe",
+ keywords:"pipe shell cmd stdout stdin redirect fd",
+ values:"cmd1 | cmd2 | cmd3", channel:"R"},
+
+{kind:"helper", key:"리다이렉션 (shell)", group:"Shell",
+ desc:"셸 리다이렉션. > 덮어쓰기, >> 이어쓰기, < 입력.",
+ loc:"src/shell.c", tags:"shell p10 redirect",
+ keywords:"redirect shell > >> < file input output",
+ values:"cmd > file, cmd >> file, cmd < file", channel:"R"},
+
+{kind:"helper", key:"변수 (shell)", group:"Shell",
+ desc:"셸 변수. $name=value 할당, echo $name으로 참조. 숫자 연산도 지원.",
+ loc:"src/shell.c", tags:"shell p10 var",
+ keywords:"variable shell $ assign echo name value",
+ values:"$name = \"value\", echo $name, $count + 1", channel:"R"},
+
+{kind:"helper", key:"source 명령 (shell)", group:"Shell",
+ desc:"스크립트 파일 실행. source /scripts/init.pxl → 파일 내용을 한 줄씩 실행.",
+ loc:"src/shell.c", tags:"shell p10 script",
+ keywords:"source script execute file line pxl",
+ values:"source /scripts/file.pxl", channel:"R"},
+
+{kind:"helper", key:"run @tile(N) (shell VM 실행)", group:"Shell",
+ desc:"셸에서 VM 실행. run @tile(N)=타일 N 코드 실행, run @tile(N) &=백그라운드.",
+ loc:"src/shell.c", tags:"shell p10 vm",
+ keywords:"run tile vm execute background jobs shell",
+ values:"run @tile(N), run @tile(N) &, jobs", channel:"A,B"},
+
+{kind:"helper", key:"jobs 명령 (shell)", group:"Shell",
+ desc:"백그라운드 실행 중인 프로세스 목록 표시.",
+ loc:"src/shell.c", tags:"shell p10",
+ keywords:"jobs background process list",
+ values:"jobs", channel:"A"},
+
+{kind:"helper", key:"login 명령 (shell)", group:"Shell",
+ desc:"사용자 인증 + Lane 전환 + cwd=홈 타일. Tervas 필터도 해당 Lane으로 전환.",
+ loc:"src/shell.c", tags:"shell p10 user",
+ keywords:"login user lane switch home filter tervas",
+ values:"login <username>", channel:"A"},
+
+{kind:"helper", key:"sudo 명령 (shell)", group:"Shell",
+ desc:"일시적으로 Lane 0(root)으로 전환 후 명령 실행. 실행 후 원래 Lane 복귀. root만 가능.",
+ loc:"src/shell.c src/user.c", tags:"shell p10 user",
+ keywords:"sudo root lane switch temporary execute privilege",
+ values:"sudo <command>", channel:"A"},
+
+{kind:"helper", key:"alias 명령 (shell)", group:"Shell",
+ desc:"명령 별칭 등록. alias 등록 후 셸 실행 루프에서 치환. unalias로 삭제.",
+ loc:"src/shell.c", tags:"shell p10",
+ keywords:"alias shell command shortcut substitute unalias",
+ values:"alias ll='ls', alias gs='jobs', unalias ll", channel:"R"},
+
+{kind:"helper", key:"if/else 조건 (shell)", group:"Shell",
+ desc:"조건 분기. 비교 연산자: ==, !=, <, >. 조건 결과에 따라 분기.",
+ loc:"src/shell.c", tags:"shell p10",
+ keywords:"if else condition branch shell compare",
+ values:"if $x == 0 then echo ok else echo fail fi", channel:"R"},
+
+{kind:"helper", key:"for 루프 (shell)", group:"Shell",
+ desc:"반복 실행. 범위 또는 리스트 대상 루프. break/continue 지원.",
+ loc:"src/shell.c", tags:"shell p10",
+ keywords:"for loop range list shell iterate break continue",
+ values:"for $i in 1..10 do echo $i done", channel:"R"},
+
+{kind:"helper", key:"exit 명령 (shell)", group:"Shell",
+ desc:"현재 셸 프로세스 종료. 로그인 셸이면 Lane 전환 해제 후 init 복귀.",
+ loc:"src/shell.c", tags:"shell p10",
+ keywords:"exit shell quit terminate lane logout",
+ values:"exit, exit 0, exit 1", channel:"A"},
+
+{kind:"helper", key:"history 명령 (shell)", group:"Shell",
+ desc:"이전 실행 명령 목록 표시. !N으로 N번째 명령 재실행.",
+ loc:"src/shell.c", tags:"shell p10",
+ keywords:"history command list previous rerun shell",
+ values:"history, !3, !!", channel:"R"},
+
+/* ─── Group: Phase10 · User/Permissions ─── */
+{kind:"helper", key:"B=FE A=SYS_GETUID", group:"Phase10",
+ desc:"VM에서 현재 Lane(uid) 반환. SYS_GETUID 시스템 콜.",
+ loc:"src/user.c include/canvasos_syscall.h", tags:"user p10 syscall",
+ keywords:"getuid uid lane syscall VM current user",
+ values:"B=0xFE, A=SYS_GETUID → current Lane", channel:"B,A"},
+
+{kind:"helper", key:"B=FE A=SYS_SETUID G=target_lane", group:"Phase10",
+ desc:"VM에서 Lane 전환. SYS_SETUID 시스템 콜. root(Lane 0)만 가능.",
+ loc:"src/user.c include/canvasos_syscall.h", tags:"user p10 syscall",
+ keywords:"setuid lane switch root privilege syscall VM",
+ values:"B=0xFE, A=SYS_SETUID, G=target_lane", channel:"B,A,G"},
+
+{kind:"const", key:"Lane 체계 (P10)", group:"Phase10",
+ desc:"Lane 0=root(모든 타일 접근), Lane 1~254=일반 사용자, Lane 255=broadcast. 파일 접근 시 tile_check(tp, uid, tile_id, perm) 호출.",
+ loc:"include/canvasos_user.h", tags:"user p10",
+ keywords:"lane root user broadcast uid tile check permission system",
+ values:"Lane 0=root, Lane 1..254=user, Lane 255=broadcast", channel:"A"},
+
+{kind:"helper", key:"B=FE A=SYS_KILL G=pid R=sig", group:"Phase10",
+ desc:"VM에서 프로세스에 시그널 전송. SYS_KILL 시스템 콜. root 또는 동일 Lane만 가능.",
+ loc:"src/user.c include/canvasos_syscall.h", tags:"user p10 syscall",
+ keywords:"kill signal pid sig syscall SYS_KILL VM B=FE",
+ values:"B=0xFE, A=SYS_KILL, G=pid, R=sig", channel:"B,A,G,R"},
+
+{kind:"helper", key:"파일 권한 모델 (tile_check)", group:"Phase10",
+ desc:"타일 소유자=lane. 접근 검사: tile_check(tp, uid, tile_id, perm). perm: R/W/X 비트.",
+ loc:"src/user.c include/canvasos_user.h", tags:"user p10",
+ keywords:"tile check permission perm uid lane rwx access owner",
+ values:"tile_check(tp, uid, tile_id, PERM_R|PERM_W) → 0/EPERM", channel:"A,G"},
+
+/* ─── Group: Utilities · Shell Built-in Commands ─── */
+{kind:"func", key:"ps (유틸리티)", group:"Utilities",
+ desc:"/proc 순회 → PID STATE ENERGY LANE TILES 목록 출력. PixelCode 프로그램으로 구현.",
+ loc:"src/utils.c include/canvasos_utils.h", tags:"utils p10",
+ keywords:"ps process list pid state energy lane tile proc",
+ values:"cmd_ps(ctx)", channel:"A,G"},
+
+{kind:"func", key:"top (유틸리티)", group:"Utilities",
+ desc:"Tervas 스냅샷 + 프로세스별 에너지/타일 실시간 표시.",
+ loc:"src/utils.c", tags:"utils p10",
+ keywords:"top realtime process energy tile tervas snapshot",
+ values:"cmd_top(ctx)", channel:"A,G"},
+
+{kind:"func", key:"kill PID [SIG] (유틸리티)", group:"Utilities",
+ desc:"SYSCALL SYS_KILL로 프로세스에 시그널 전송.",
+ loc:"src/utils.c", tags:"utils p10",
+ keywords:"kill process signal pid sig SYS_KILL",
+ values:"cmd_kill(ctx, pid, sig)", channel:"A,B"},
+
+{kind:"func", key:"ls [DIR] (유틸리티)", group:"Utilities",
+ desc:"path_ls → 디렉터리 엔트리 포맷팅 출력.",
+ loc:"src/utils.c", tags:"utils p10 path",
+ keywords:"ls list directory entries format output",
+ values:"cmd_ls(ctx, pid, path)", channel:"A,R"},
+
+{kind:"func", key:"cd DIR (유틸리티)", group:"Utilities",
+ desc:"path_cd → cwd 변경.",
+ loc:"src/utils.c", tags:"utils p10 path",
+ keywords:"cd chdir directory change cwd",
+ values:"cmd_cd(ctx, pid, path)", channel:"A"},
+
+{kind:"func", key:"cat FILE (유틸리티)", group:"Utilities",
+ desc:"open → read loop → stdout → close 흐름. PixelCode 프로그램.",
+ loc:"src/utils.c", tags:"utils p10 fd",
+ keywords:"cat file read stdout open close fd",
+ values:"cmd_cat(ctx, pid, path)", channel:"R"},
+
+{kind:"func", key:"echo TEXT (유틸리티)", group:"Utilities",
+ desc:"TEXT를 stdout 또는 리다이렉션된 fd에 출력.",
+ loc:"src/utils.c", tags:"utils p10",
+ keywords:"echo text output stdout fd redirect",
+ values:"cmd_echo(ctx, pid, text)", channel:"R"},
+
+{kind:"func", key:"mkdir DIR (유틸리티)", group:"Utilities",
+ desc:"path_mkdir 호출.",
+ loc:"src/utils.c", tags:"utils p10 path",
+ keywords:"mkdir make directory create",
+ values:"cmd_mkdir(ctx, pid, path)", channel:"A"},
+
+{kind:"func", key:"rm FILE (유틸리티)", group:"Utilities",
+ desc:"path_rm 호출. 게이트 CLOSE + 슬롯 해제.",
+ loc:"src/utils.c", tags:"utils p10 path",
+ keywords:"rm remove delete file gate close slot",
+ values:"cmd_rm(ctx, pid, path)", channel:"A"},
+
+{kind:"func", key:"cp SRC DST (유틸리티)", group:"Utilities",
+ desc:"open SRC → read → open DST → write → close 흐름.",
+ loc:"src/utils.c", tags:"utils p10 fd",
+ keywords:"cp copy file src dst open read write close fd",
+ values:"cmd_cp(ctx, pid, src, dst)", channel:"R"},
+
+{kind:"func", key:"info (유틸리티)", group:"Utilities",
+ desc:"tick, 프로세스 수, 메모리 사용량, WH/BH 상태 종합 출력.",
+ loc:"src/utils.c", tags:"utils p10",
+ keywords:"info tick process memory wh bh status summary",
+ values:"cmd_info(ctx)", channel:"A,G,R"},
+
+{kind:"func", key:"watch (유틸리티)", group:"Utilities",
+ desc:"VM 실행 중 미니맵 자동 갱신. watch_start와 연동.",
+ loc:"src/utils.c src/watch.c", tags:"utils p10",
+ keywords:"watch minimap realtime vm execution update",
+ values:"cmd_watch(ctx)", channel:"G"},
+
+{kind:"func", key:"mv SRC DST (유틸리티)", group:"Utilities",
+ desc:"파일/디렉터리 이동. 동일 FS 내부: 엔트리 재연결. 크로스 경로: cp + rm 흐름.",
+ loc:"src/utils.c", tags:"utils p10 path",
+ keywords:"mv move rename file directory entry relink",
+ values:"cmd_mv(ctx, pid, src, dst)", channel:"A,R"},
+
+{kind:"func", key:"chmod MODE FILE (유틸리티)", group:"Utilities",
+ desc:"타일 권한 변경. tile_check 갱신. root 또는 타일 소유자만 가능.",
+ loc:"src/utils.c src/user.c", tags:"utils p10 user",
+ keywords:"chmod permission mode tile file owner root rwx",
+ values:"cmd_chmod(ctx, pid, mode, path)", channel:"A"},
+
+{kind:"func", key:"pwd (유틸리티)", group:"Utilities",
+ desc:"현재 작업 디렉터리 경로 출력. PROC_TABLE의 cwd_tile을 path 문자열로 변환.",
+ loc:"src/utils.c", tags:"utils p10 path",
+ keywords:"pwd print working directory cwd tile path",
+ values:"cmd_pwd(ctx, pid)", channel:"R"},
+
+{kind:"func", key:"whoami (유틸리티)", group:"Utilities",
+ desc:"현재 Lane(uid) 이름 출력. SYS_GETUID 호출 후 user 테이블에서 이름 조회.",
+ loc:"src/utils.c", tags:"utils p10 user",
+ keywords:"whoami user lane uid current username",
+ values:"cmd_whoami(ctx, pid)", channel:"R"},
+
+{kind:"func", key:"env (유틸리티)", group:"Utilities",
+ desc:"현재 셸 환경 변수 목록 출력. KEY=VALUE 형식.",
+ loc:"src/utils.c", tags:"utils p10",
+ keywords:"env environment variable list shell export",
+ values:"cmd_env(ctx, pid)", channel:"R"},
+
+/* ─── Group: Phase10 · Boot Sequence and Utility Install Model ─── */
+{kind:"helper", key:"/sys/bin/ 유틸리티 설치 모델", group:"Phase10",
+ desc:"모든 유틸리티는 PixelCode 프로그램. /sys/bin/의 고정 타일에 심어짐. 셸이 호출하면 proc_spawn + VM 실행.",
+ loc:"src/utils.c src/shell.c", tags:"p10 utils shell",
+ keywords:"sys bin utility install tile pixelcode program shell spawn vm",
+ values:"/sys/bin/ps=tile 3000, /sys/bin/ls=tile 3002, /sys/bin/cat=tile 3004", channel:"A,B"},
+
+{kind:"helper", key:"부팅 시퀀스 (init → login → shell)", group:"Phase10",
+ desc:"POST(런처) → init(pid=0, 유틸리티 타일 초기화) → login(Lane 선택) → shell(pid=1, profile.pxl 실행) → 사용자 입력.",
+ loc:"canvasos_launcher.c src/proc.c src/shell.c", tags:"p10 boot",
+ keywords:"boot init login shell pid lane profile pxl userland sequence",
+ values:"POST → init → login → shell → user input", channel:"A,G"},
+
+{kind:"helper", key:"프로그램 설치/실행/삭제 모델", group:"Phase10",
+ desc:"설치=캔버스 타일에 셀 기록, 실행=게이트 열고 VM run, 삭제=게이트 닫고 셀 클리어.",
+ loc:"canvasos_launcher.c src/vm.c", tags:"p10 model",
+ keywords:"install run delete program tile cell gate vm canvas",
+ values:"install=tile write, run=gate open + vm, delete=gate close + cell clear", channel:"A,B,G"},
+
+{kind:"helper", key:"init 프로세스 (pid=0)", group:"Phase10",
+ desc:"시스템 부팅 시 최초 프로세스. /sys/bin/ 유틸리티 초기화, /dev/ 디바이스 등록, /proc/ 가상 FS 등록, root 사용자 생성.",
+ loc:"canvasos_launcher.c", tags:"p10 boot init",
+ keywords:"init pid 0 root boot sys bin dev proc user create register",
+ values:"pid=0, Lane=0, tile=0", channel:"A"},
+
+/* ─── Group: Docs ─── */
+{kind:"doc", key:"TODO_PHASE10_USERLAND", group:"Docs",
+ desc:"Phase-10 Userland on PixelCode 전체 설계 문서. Phase-8 잔여분 편입, fd/경로/셸/사용자/유틸리티 상세, 유틸리티 설치 모델, 부팅 시퀀스, Task 의존성, 완료 조건, 시스템 전체 상태(Phase 0~10) 수록.",
+ loc:"TODO_PHASE10_USERLAND", tags:"docs p10",
+ keywords:"phase10 userland fd path shell user utils pixelcode vm boot init login sudo watch top ps ls cat echo mkdir rm cp info kill syscall lane tile program install"},
+
+{kind:"doc", key:"canvasos_fd.h · FD API 헤더", group:"Docs",
+ desc:"파일 디스크립터 API 헤더. fd_open/fd_read/fd_write/fd_close/fd_dup 선언. FD_MAX=32, STDIN/STDOUT/STDERR 상수 정의.",
+ loc:"include/canvasos_fd.h", tags:"docs p10 fd",
+ keywords:"fd header api open read write close dup FD_MAX stdin stdout stderr"},
+
+{kind:"doc", key:"canvasos_syscall.h · 시스템 콜 상수", group:"Docs",
+ desc:"Phase 10 시스템 콜 번호 헤더. SYS_OPEN=0x10, SYS_READ=0x11, SYS_WRITE=0x12, SYS_CLOSE=0x13, SYS_GETUID=0x20, SYS_SETUID=0x21, SYS_KILL=0x22, SYS_FORK=0x30, SYS_EXEC=0x31, SYS_WAIT=0x32, SYS_SLEEP=0x33.",
+ loc:"include/canvasos_syscall.h", tags:"docs p10 syscall",
+ keywords:"syscall header SYS_OPEN SYS_READ SYS_WRITE SYS_CLOSE SYS_GETUID SYS_SETUID SYS_KILL SYS_FORK SYS_EXEC SYS_WAIT SYS_SLEEP"},
+
+/* ─── Group: Userland · General Userland Model ─── */
+{kind:"helper", key:"UserProcess 모델", group:"Userland",
+ desc:"CanvasOS 유저 프로세스. Lane N에서 VM에 의해 실행되는 PixelCode 프로그램. PROC_TABLE에 등록. 에너지, fd_table, cwd_tile 보유.",
+ loc:"src/proc.c include/canvasos_proc.h", tags:"userland p10",
+ keywords:"user process vm lane pixelcode proc table energy fd cwd tile",
+ values:"pid, lane, state, energy, cwd_tile, fd_table[]", channel:"A,G"},
+
+{kind:"func", key:"proc_spawn(pid, lane, tile_id)", group:"Userland",
+ desc:"새 프로세스 생성. PROC_TABLE에 등록. 부모 fd 상속 안 함(명시적 dup 필요). VM 컨텍스트 초기화.",
+ loc:"src/proc.c include/canvasos_proc.h", tags:"userland p10",
+ keywords:"proc spawn create process pid lane tile vm context register",
+ values:"proc_spawn(pid, lane, tile_id) → 0 on success", channel:"A,B"},
+
+{kind:"struct", key:"PROC_TABLE 구조체", group:"Userland",
+ desc:"프로세스 테이블 항목. 시스템 전체 MAX_PROC 엔트리. 각 엔트리에 pid, lane, state, energy, cwd_tile, fd_table[] 보유.",
+ loc:"include/canvasos_proc.h", tags:"userland p10",
+ keywords:"proc table struct pid lane state energy cwd tile fd table MAX_PROC",
+ values:"pid, lane, state(RUNNING/SLEEP/ZOMBIE), energy, cwd_tile, fd_table[FD_MAX]", channel:"A,G"},
+
+{kind:"const", key:"에너지 버짓 (Energy Budget)", group:"Userland",
+ desc:"프로세스별 최대 에너지 제한. energy=0이면 자동 HALT. init에서 기본값 설정.",
+ loc:"include/canvasos_proc.h", tags:"userland p10",
+ keywords:"energy budget limit process halt stop default init",
+ values:"DEFAULT_ENERGY=255, energy==0 → HALT", channel:"G"},
+
+{kind:"helper", key:"IPC: 파이프 (pipe_create)", group:"Userland",
+ desc:"프로세스 간 파이프 통신. pipe_create() → {read_fd, write_fd} 쌍 반환. 셸 | 연산자에서 사용.",
+ loc:"src/fd.c src/shell.c", tags:"userland p10 fd",
+ keywords:"ipc pipe create process fd read write pair shell",
+ values:"pipe_create() → {read_fd, write_fd}", channel:"R"},
+
+{kind:"helper", key:"시그널 모델 (Signal)", group:"Userland",
+ desc:"비동기 프로세스 인터럽트. SIG_TERM=정상 종료 요청, SIG_KILL=강제 종료, SIG_STOP=일시 정지. SYS_KILL로 전송.",
+ loc:"src/user.c include/canvasos_signal.h", tags:"userland p10",
+ keywords:"signal sigterm sigkill sigstop async interrupt process terminate",
+ values:"SIG_TERM=1, SIG_KILL=9, SIG_STOP=19", channel:"B,A"},
+
+{kind:"helper", key:"profile.pxl 실행 스크립트", group:"Userland",
+ desc:"로그인 시 자동 실행 스크립트. 홈 타일의 profile.pxl. alias, 변수 초기화, 경로 설정 등 포함.",
+ loc:"src/shell.c", tags:"userland p10 shell",
+ keywords:"profile pxl login auto run script alias variable path home tile",
+ values:"~/.profile.pxl → login시 source 실행", channel:"R"},
+
+{kind:"helper", key:"cwd (현재 작업 디렉터리)", group:"Userland",
+ desc:"프로세스별 현재 디렉터리. PROC_TABLE의 cwd_tile 필드. cd 명령으로 변경. pwd 명령으로 출력.",
+ loc:"src/proc.c src/utils.c", tags:"userland p10 path",
+ keywords:"cwd current working directory proc table tile cd pwd",
+ values:"proc->cwd_tile = path_resolve(path)", channel:"A"},
+
+{kind:"helper", key:"/dev 가상 디바이스 목록", group:"Userland",
+ desc:"/dev/null=쓰기 버림/읽기 EOF, /dev/zero=0 스트림, /dev/input=키보드 입력 스트림, /dev/tty=현재 터미널.",
+ loc:"src/path.c src/fd.c", tags:"userland p10 path",
+ keywords:"dev null zero input tty virtual device stream terminal keyboard",
+ values:"/dev/null, /dev/zero, /dev/input, /dev/tty", channel:"A,R"},
+
+{kind:"helper", key:"Tervas 미니맵 (사용자 관점)", group:"Userland",
+ desc:"Tervas가 현재 Lane의 타일 상태를 실시간 표시. watch 명령과 연동. 프로세스 실행 중 자동 갱신.",
+ loc:"src/watch.c", tags:"userland p10",
+ keywords:"tervas minimap lane tile realtime watch update process",
+ values:"watch → Tervas 미니맵 자동 갱신", channel:"G"},
+
+{kind:"struct", key:"fd_table (프로세스별 FD 테이블)", group:"Userland",
+ desc:"프로세스별 열린 파일 디스크립터 테이블. MAX_FD=32. fd_entry: {tile_id, offset, flags}.",
+ loc:"include/canvasos_fd.h", tags:"userland p10 fd",
+ keywords:"fd table process file descriptor MAX_FD tile offset flags open",
+ values:"fd_table[FD_MAX], fd_entry{tile_id, offset, flags}", channel:"R"},
+
+{kind:"helper", key:"PixelCode 사용자 프로그램 구조", group:"Userland",
+ desc:"PixelCode 사용자 프로그램 헤더. MAGIC + 버전 + 엔트리포인트 오프셋. 타일에 인코딩되어 저장.",
+ loc:"src/pixelcode.c include/canvasos_pixelcode.h", tags:"userland p10 pxlc",
+ keywords:"pixelcode program header magic version entrypoint tile encode user",
+ values:"MAGIC=0x50584C43, entry_offset, code_size", channel:"B,R"},
+
+{kind:"helper", key:"스택 / 레지스터 컨벤션 (userland)", group:"Userland",
+ desc:"PixelCode VM 레지스터 컨벤션. A=주소/위치, B=명령/타입, G=상태/값, R=스트림/결과. 호출 규약: G에 인수, R에 반환값.",
+ loc:"include/canvasos_vm.h", tags:"userland p10 pxlc",
+ keywords:"register stack convention A B G R argument return vm pixelcode call",
+ values:"A=where, B=what, G=state, R=stream", channel:"A,B,G,R"},
+
+{kind:"helper", key:"TTY / 터미널 입력 모델", group:"Userland",
+ desc:"/dev/tty에서 line-buffered 읽기. 엔터 시 셸로 전달. raw 모드 전환으로 문자 단위 읽기 가능.",
+ loc:"src/fd.c src/shell.c", tags:"userland p10",
+ keywords:"tty terminal input line buffer raw mode char read dev",
+ values:"/dev/tty → line-buffered or raw mode", channel:"R"},
+
+{kind:"helper", key:"환경 변수 (shell env)", group:"Userland",
+ desc:"셸 환경 변수. 자식 프로세스에 상속. export로 전역 지정. $PATH, $HOME, $LANE 기본 변수.",
+ loc:"src/shell.c", tags:"userland p10 shell",
+ keywords:"env environment variable export PATH HOME LANE inherit child process",
+ values:"$PATH=/sys/bin, $HOME=~, $LANE=current_lane", channel:"R"},
+
+/* ─── Group: Phase10 · Additional Syscalls ─── */
+{kind:"helper", key:"B=FE A=SYS_FORK", group:"Phase10",
+ desc:"현재 프로세스 복제. 새 pid 할당. 부모의 레지스터/메모리 복사. fd 테이블 상속. 반환값: 부모=자식pid, 자식=0.",
+ loc:"src/proc.c include/canvasos_syscall.h", tags:"p10 syscall",
+ keywords:"fork clone process pid fd inherit syscall SYS_FORK VM B=FE",
+ values:"B=0xFE, A=SYS_FORK → parent:child_pid, child:0", channel:"B,A"},
+
+{kind:"helper", key:"B=FE A=SYS_EXEC G=tile_id", group:"Phase10",
+ desc:"현재 프로세스 이미지를 타일 tile_id의 코드로 교체. fd는 유지. 메모리/레지스터 초기화.",
+ loc:"src/proc.c include/canvasos_syscall.h", tags:"p10 syscall",
+ keywords:"exec execute replace image tile syscall SYS_EXEC VM B=FE",
+ values:"B=0xFE, A=SYS_EXEC, G=tile_id", channel:"B,A,G"},
+
+{kind:"helper", key:"B=FE A=SYS_WAIT G=pid", group:"Phase10",
+ desc:"자식 프로세스 종료 대기. G=0이면 임의 자식 대기. 종료 코드 R 레지스터에 반환.",
+ loc:"src/proc.c include/canvasos_syscall.h", tags:"p10 syscall",
+ keywords:"wait child process exit code zombie syscall SYS_WAIT VM B=FE",
+ values:"B=0xFE, A=SYS_WAIT, G=pid → R=exit_code", channel:"B,A,G,R"},
+
+{kind:"helper", key:"B=FE A=SYS_SLEEP G=ticks", group:"Phase10",
+ desc:"VM에서 N 틱 동안 SLEEP 상태. 에너지 소비 중단. 타이머 만료 후 RUNNING 복귀.",
+ loc:"src/proc.c include/canvasos_syscall.h", tags:"p10 syscall",
+ keywords:"sleep ticks tick timer energy process syscall SYS_SLEEP VM B=FE",
+ values:"B=0xFE, A=SYS_SLEEP, G=ticks", channel:"B,A,G"},
+];
+
+/* ── ARCH MAP ── */
+const ARCH_MAP = [
+  {n:"Q0",      i:"(0,0)→(511,511)",           c:"dim",  s:""},
+  {n:"Q1",      i:"(512,0)→(1023,511)",         c:"dim",  s:""},
+  {n:"CTRL",    i:"CR0..CR3 kernel",             c:"ctrl", s:"Control Region"},
+  {n:"/proc",   i:"가상 FS /proc/pid/status",    c:"ctrl", s:"Phase10"},
+  {n:"Q2",      i:"(0,512)→(511,639)",           c:"dim",  s:""},
+  {n:"WH",      i:"(512,512) 512×128",           c:"wh",   s:"WH"},
+  {n:"BH",      i:"(512,640) 512×64",            c:"bh",   s:"BH"},
+  {n:"/dev",    i:"/dev/null /dev/zero /dev/tty", c:"ctrl", s:"Phase10"},
+  {n:"P10-BIN", i:"/sys/bin/ 유틸리티 타일 3000+", c:"p5",  s:"Phase10"},
+  {n:"Lane0",   i:"SYSTEM lane gate0..63",        c:"p5",   s:"Phase10"},
+  {n:"/wh",     i:"WhiteHole 영역",               c:"wh",   s:"Phase10"},
+  {n:"/bh",     i:"BlackHole 영역",               c:"bh",   s:"Phase10"},
+  {n:"SHELL",   i:"pid=1 사용자 셸",              c:"p10",  s:"Phase10"},
+  {n:"init",    i:"pid=0 init 프로세스",          c:"p10",  s:"Phase10"},
+];
+
+/* ── CAP ── */
+const CAP = [
+  {v:"8 MB",   l:"Canvas 메모리"},
+  {v:"4,096",  l:"Gate (타일)"},
+  {v:"256",    l:"Lane (A채널)"},
+  {v:"32",     l:"FD per proc"},
+  {v:"25+",    l:"P10 테스트"},
+  {v:"11",     l:"내장 유틸리티"},
+  {v:"79+",    l:"전체 테스트 (P6~10)"},
+];
+
+/* ── state ── */
+let activeTab = "Home";
+let dbt;
+
+/* ── helpers ── */
+function esc(s){
+  return (s||'').replace(/[&<>"']/g, c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function chBadges(ch){
+  if(!ch) return '';
+  return [...new Set((ch||'').split(/[,\s]+/).filter(x=>x))]
+    .filter(x=>['A','B','G','R'].includes(x))
+    .map(x=>`<span class="badge ${x}">${x}</span>`).join('');
+}
+
+function groupColor(g){
+  const m={
+    'Core':'gCore','Engine':'gEngine','Filesystem':'gFilesystem',
+    'I/O':'gIO','IO':'gIO','Docs':'gDocs','Phase5':'gPhase5',
+    'Userland':'gUserland','Utilities':'gUtilities',
+    'Shell':'gShell','Phase10':'gPhase10'
+  };
+  return m[g]||'gCore';
+}
+
+/* ── arch map ── */
+(function(){
+  const el = document.getElementById('arch-map');
+  el.className = 'arch-map';
+  ARCH_MAP.forEach(t=>{
+    const d = document.createElement('div');
+    d.className=`am ${t.c}${t.s?' click':''}`;
+    d.innerHTML=`<div class="am-name">${t.n}</div><div class="am-info">${t.i}</div>`;
+    if(t.s) d.onclick=()=>doSearch(t.s);
+    el.appendChild(d);
+  });
+})();
+
+/* ── cap bar ── */
+(function(){
+  const el = document.getElementById('cap-bar');
+  el.className = 'cap-bar';
+  CAP.forEach((c,i)=>{
+    if(i) el.insertAdjacentHTML('beforeend','<span class="cap-sep">·</span>');
+    el.insertAdjacentHTML('beforeend',
+      `<div class="cap-item"><div class="cap-val">${c.v}</div><div class="cap-label">${c.l}</div></div>`);
+  });
+})();
+
+/* ── card render ── */
+function cardHTML(item, idx){
+  const isDoc = item.kind === 'doc';
+  const isP10 = item.group === 'Phase10';
+  const gc = groupColor(item.group||'Core');
+
+  let grpBadge;
+  if(isP10)      grpBadge = `<span class="badge p10b">P10</span>`;
+  else if(isDoc) grpBadge = `<span class="badge dob">DOC</span>`;
+  else           grpBadge = `<span class="badge grp">${esc(item.group||'')}</span>`;
+
+  const kindBadge = `<span class="badge">${esc(item.kind||'').toUpperCase()}</span>`;
+  const chB = chBadges(item.channel||'');
+
+  /* keywords as clickable pills */
+  const kws = (item.keywords||'').split(/\s+/).filter(Boolean).slice(0,12);
+  const kwH = kws.map(k=>`<span class="kw" onclick="doSearch('${k}')">${k}</span>`).join('');
+
+  /* doc body preview */
+  const docPreview = isDoc && item.desc
+    ? `<div class="doc-body">${esc(item.desc.substring(0,500))}</div>`
+    : '';
+
+  return `<div class="card ${gc}" id="c${idx}" style="animation-delay:${Math.min(idx*.02,.25)}s">
+    <div class="head" onclick="toggle(${idx})">
+      <div class="key">${esc(item.key)}</div>
+      ${grpBadge}${kindBadge}${chB}
+      <div class="chev">▶</div>
+    </div>
+    <div class="body">
+      <p class="desc">${esc(item.desc||'')}</p>
+      ${docPreview}
+      <div class="grid">
+        <div class="k">LOCATION</div><div class="v">${esc(item.loc||'')}</div>
+        ${item.values?`<div class="k">VALUES</div><div class="v">${esc(item.values)}</div>`:''}        ${item.tags?`<div class="k">TAGS</div><div class="v">${esc(item.tags)}</div>`:''}        ${kwH?`<div class="k">KEYWORDS</div><div class="v">${kwH}</div>`:''}      </div>
+    </div>
+  </div>`;
+}
+
+/* ── scoring ── */
+function score(item, toks){
+  if(!toks.length) return 1;
+  const hay = [item.key,item.desc,item.loc,item.values||'',
+                item.tags||'',item.keywords||'',item.group||'',item.kind||''].join(' ').toLowerCase();
+  let hit=0;
+  for(const t of toks) if(hay.includes(t)) hit++;
+  return hit/toks.length;
+}
+
+/* ── render ── */
+function render(){
+  const q = document.getElementById('search').value.trim();
+  const toks = q.toLowerCase().split(/\s+/).filter(Boolean);
+
+  let items = DATA;
+
+  /* tab filter */
+  if(activeTab==='Home'){
+    document.getElementById('arch-map').style.display='';
+    document.getElementById('cap-bar').style.display='';
+  } else {
+    document.getElementById('arch-map').style.display='none';
+    document.getElementById('cap-bar').style.display='none';
+  }
+
+  if(activeTab==='Phase10-FD')    items=items.filter(x=>x.tags&&x.tags.includes('fd'));
+  else if(activeTab==='Phase10-Path')  items=items.filter(x=>x.tags&&x.tags.includes('path'));
+  else if(activeTab==='Phase10-Shell') items=items.filter(x=>x.tags&&x.tags.includes('shell'));
+  else if(activeTab==='Phase10-User')  items=items.filter(x=>x.tags&&x.tags.includes('user'));
+  else if(activeTab==='Phase10-Utils') items=items.filter(x=>x.tags&&x.tags.includes('utils'));
+  else if(activeTab==='Phase10')       items=items.filter(x=>x.group==='Phase10');
+  else if(activeTab==='Docs')          items=items.filter(x=>x.group==='Docs');
+  else if(activeTab.startsWith('Docs-')){
+    const dk=activeTab.replace('Docs-','');
+    items=items.filter(x=>x.group==='Docs'&&(x.loc||'').startsWith(dk));
+  }
+  else if(activeTab!=='Home') items=items.filter(x=>(x.group||'')==activeTab);
+
+  if(toks.length){
+    items=items.map(x=>{return {x,s:score(x,toks)}})
+               .filter(o=>o.s>0)
+               .sort((a,b)=>b.s-a.s)
+               .map(o=>o.x);
+  }
+
+  const meta=document.getElementById('meta');
+  const tabColor=activeTab.startsWith('Docs')?'hi2':'hi';
+  meta.innerHTML=toks.length
+    ?`<span class="hi">${items.length}</span> results · "<span class="hi">${esc(q)}</span>" · tab=<span class="${tabColor}">${esc(activeTab)}</span>`
+    :`<span class="hi">${items.length}</span> entries · tab=<span class="${tabColor}">${esc(activeTab)}</span>`;
+
+  const cards=document.getElementById('cards');
+  if(!items.length){
+    cards.innerHTML=`<div class="empty">검색 결과 없음: "<em>${esc(q)}</em>" — 시도: SYS_OPEN, fd, path_resolve, shell, login, proc_spawn</div>`;
+    return;
+  }
+  cards.innerHTML=items.map((x,i)=>cardHTML(x,i)).join('');
+}
+
+function toggle(i){document.getElementById('c'+i)?.classList.toggle('open');}
+function doSearch(kw){
+  document.getElementById('search').value=kw;
+  render();
+}
+
+/* ── nav ── */
+document.querySelectorAll('.nav button[data-tab]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    activeTab=b.dataset.tab;
+    render();
+  });
+});
+document.getElementById('search').addEventListener('input',()=>{clearTimeout(dbt);dbt=setTimeout(render,120);});
+render();
+</script>
+</body>
+</html>
