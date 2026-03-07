@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SJ CANVAS OS · DevDictionary Phase 8</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+:root{
+  --bg:#060809;
+  --panel:#0b0e12;
+  --panel2:#111417;
+  --border:#1a1e26;
+  --border2:#22272f;
+  --dim:#343b48;
+  --muted:#52596a;
+  --text:#b8c0d4;
+  --bright:#dde4f4;
+  --A:rgba(255,200,80,1);
+  --B:rgba(255,100,100,1);
+  --G:rgba(80,240,150,1);
+  --R:rgba(80,160,255,1);
+  --accent:#3ef5c0;
+  --p5:#b060ff;
+  --p8:#00c8ff;
+  --doc:#f0a030;
+  --scan:rgba(62,245,192,0.015);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:13.5px; line-height:1.65;
+  min-height:100vh; overflow:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,var(--scan) 0,var(--scan) 1px,transparent 1px,transparent 3px);
+  pointer-events:none; z-index:0;
+}
+
+.app{position:relative;z-index:1;display:flex;height:100vh;}
+
+/* ── sidebar ── */
+.sidebar{
+  width:250px; background:var(--panel);
+  border-right:1px solid var(--border);
+  padding:16px 12px;
+  display:flex; flex-direction:column; gap:10px;
+  overflow-y:auto;
+}
+.brand{
+  padding:10px 10px 12px;
+  border:1px solid var(--border);
+  background:rgba(62,245,192,.03);
+  flex-shrink:0;
+}
+.brand .tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--accent);
+}
+.brand .title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:17px; font-weight:700; color:var(--bright);
+}
+.brand .sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
+
+.sep{height:1px; background:var(--border); flex-shrink:0;}
+
+.nav{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+.nav-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--dim); padding:4px 8px 2px;
+}
+.nav button{
+  width:100%; text-align:left; padding:8px 10px;
+  background:transparent; border:1px solid var(--border2);
+  color:var(--text); cursor:pointer;
+  font-family:'JetBrains Mono',monospace; font-size:10.5px;
+  letter-spacing:.05em; transition:all .1s;
+}
+.nav button:hover{border-color:var(--accent);color:var(--bright);background:rgba(62,245,192,.03);}
+.nav button.active{border-color:var(--accent);color:var(--accent);background:rgba(62,245,192,.05);}
+.nav button.p5{border-color:rgba(176,96,255,.3);color:var(--p5);}
+.nav button.p5:hover{border-color:var(--p5);background:rgba(176,96,255,.04);}
+.nav button.p5.active{border-color:var(--p5);background:rgba(176,96,255,.07);}
+.nav button.p8{border-color:rgba(0,200,255,.3);color:var(--p8);}
+.nav button.p8:hover{border-color:var(--p8);background:rgba(0,200,255,.04);}
+.nav button.p8.active{border-color:var(--p8);background:rgba(0,200,255,.07);}
+.nav button.doc-tab{border-color:rgba(240,160,48,.25);color:var(--doc);}
+.nav button.doc-tab:hover{border-color:var(--doc);background:rgba(240,160,48,.04);}
+.nav button.doc-tab.active{border-color:var(--doc);background:rgba(240,160,48,.06);}
+
+.sidebar-footer{
+  margin-top:auto; padding-top:10px; border-top:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim);
+}
+
+/* ── main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+.topbar{
+  display:flex; align-items:center; gap:14px;
+  padding:0 18px; height:52px;
+  border-bottom:1px solid var(--border);
+  background:var(--panel); flex-shrink:0;
+}
+
+.arch-pills{display:flex;gap:6px;align-items:center;}
+.pill{
+  display:inline-flex; align-items:center; gap:5px;
+  padding:2px 8px; border:1px solid var(--border2);
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  color:var(--muted); white-space:nowrap;
+}
+.dot{width:7px;height:7px;}
+.dot.A{background:var(--A);}.dot.B{background:var(--B);}
+.dot.G{background:var(--G);}.dot.R{background:var(--R);}
+.dot.p8{background:var(--p8);}
+
+.sw{position:relative; flex:1; max-width:540px;}
+.sw .pfx{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--accent);
+  pointer-events:none;
+}
+#search{
+  width:100%; padding:9px 12px 9px 34px;
+  background:var(--panel2); border:1px solid var(--border2);
+  border-left:3px solid var(--accent);
+  color:var(--bright);
+  font-family:'JetBrains Mono',monospace; font-size:13px; outline:none;
+  transition:box-shadow .12s, border-color .12s;
+}
+#search:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(62,245,192,.12);}
+#search::placeholder{color:var(--dim);}
+
+.content{flex:1;overflow-y:auto;padding:14px 18px 40px;}
+.meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-bottom:12px;}
+.meta .hi{color:var(--accent);}
+.meta .hi2{color:var(--p8);}
+
+/* ── arch map ── */
+.arch-map{
+  display:grid; grid-template-columns:repeat(5,1fr); gap:2px;
+  margin-bottom:18px;
+  font-family:'JetBrains Mono',monospace; font-size:8.5px;
+}
+.am{
+  padding:8px 9px; border:1px solid var(--border2);
+  cursor:default; transition:all .11s;
+}
+.am.click{cursor:pointer;}
+.am.click:hover{background:rgba(62,245,192,.03);border-color:var(--accent);}
+.am-name{font-weight:700;margin-bottom:1px;}
+.am-info{color:var(--dim);font-size:8px;}
+.am.wh .am-name{color:#38b4ff;}
+.am.bh .am-name{color:#ff5566;}
+.am.ctrl .am-name{color:var(--muted);}
+.am.cvp .am-name{color:#ffdd40;}
+.am.p5 .am-name{color:var(--p5);}
+.am.dim .am-name{color:var(--dim);}
+
+/* ── canvas capacity bar ── */
+.cap-bar{
+  display:flex; gap:10px; align-items:center; margin-bottom:16px;
+  padding:10px 14px; border:1px solid var(--border);
+  background:var(--panel); font-family:'JetBrains Mono',monospace; font-size:9.5px;
+}
+.cap-item{display:flex;flex-direction:column;gap:2px;}
+.cap-val{color:var(--accent);font-size:12px;font-weight:700;}
+.cap-label{color:var(--dim);font-size:8px;text-transform:uppercase;letter-spacing:.1em;}
+.cap-sep{color:var(--border2);margin:0 2px;}
+
+/* ── cards ── */
+.cards{display:flex;flex-direction:column;gap:2px;}
+
+.card{
+  background:var(--panel); border:1px solid var(--border);
+  border-left:3px solid transparent;
+  animation:fi .12s ease-out both;
+}
+@keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.card:hover{background:var(--panel2);}
+
+.card.gCore{border-left-color:#4a90d9;}
+.card.gEngine{border-left-color:var(--accent);}
+.card.gFilesystem{border-left-color:#50c88a;}
+.card.gIO{border-left-color:#ffdd40;}
+.card.gDocs{border-left-color:var(--doc);}
+.card.gPhase5{border-left-color:var(--p5);}
+.card.gPhase8{border-left-color:var(--p8);}
+.card.gKernel{border-left-color:#00c8ff;}
+.card.gIPC{border-left-color:#ff9040;}
+.card.gSyscall{border-left-color:#c0c0c0;}
+
+.head{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 12px;cursor:pointer;user-select:none;
+}
+.key{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;font-weight:700;color:var(--bright);flex:1;
+}
+.badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;padding:1px 6px;border:1px solid var(--border2);
+  white-space:nowrap;
+}
+.badge.A{color:var(--A);border-color:rgba(255,200,80,.25);background:rgba(255,200,80,.05);}
+.badge.B{color:var(--B);border-color:rgba(255,100,100,.25);background:rgba(255,100,100,.05);}
+.badge.G{color:var(--G);border-color:rgba(80,240,150,.25);background:rgba(80,240,150,.05);}
+.badge.R{color:var(--R);border-color:rgba(80,160,255,.25);background:rgba(80,160,255,.05);}
+.badge.grp{color:var(--muted);}
+.badge.p5b{color:var(--p5);border-color:rgba(176,96,255,.3);background:rgba(176,96,255,.05);}
+.badge.p8b{color:var(--p8);border-color:rgba(0,200,255,.3);background:rgba(0,200,255,.05);}
+.badge.dob{color:var(--doc);border-color:rgba(240,160,48,.25);background:rgba(240,160,48,.05);}
+.chev{color:var(--dim);font-size:9px;font-family:monospace;transition:transform .12s;}
+.card.open .chev{transform:rotate(90deg);}
+
+.body{display:none;border-top:1px solid var(--border);padding:10px 12px 12px;}
+.card.open .body{display:block;}
+.desc{color:var(--text);font-size:13px;line-height:1.75;margin-bottom:10px;}
+.grid{display:grid;grid-template-columns:80px 1fr;gap:3px 8px;}
+.k{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;padding-top:2px;}
+.v{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);line-height:1.9;}
+.kw{
+  display:inline-block;background:var(--panel2);
+  border:1px solid var(--border2);padding:0 5px;margin:1px 2px;
+  color:var(--accent);font-size:9px;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;transition:border-color .1s;
+}
+.kw:hover{border-color:var(--accent);}
+
+.doc-body{
+  background:var(--panel2);border:1px solid var(--border);
+  padding:10px 12px;margin-top:8px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--dim);line-height:1.8;white-space:pre-wrap;word-break:break-word;
+}
+
+.empty{
+  padding:48px 0;text-align:center;
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);
+}
+.empty em{color:var(--accent);font-style:normal;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- sidebar -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="tag">SJCANVOS</div>
+    <div class="title">DevDictionary</div>
+    <div class="sub">Phase 8 · ~100 entries · Userland Completion</div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-label">Core</div>
+    <button data-tab="Home" class="active">◈ 전체 (Home)</button>
+    <button data-tab="Kernel">⬡ Kernel</button>
+    <button data-tab="IPC">⬡ IPC</button>
+    <button data-tab="Syscall">⬡ Syscall</button>
+  </div>
+
+  <div class="sep"></div>
+
+  <div class="nav">
+    <div class="nav-label">Phase 8</div>
+    <button data-tab="Phase8" class="p8">⬡ Phase 8 전체</button>
+    <button data-tab="Phase8-Proc" class="p8">⬡ [PROC] 프로세스 모델</button>
+    <button data-tab="Phase8-Sig" class="p8">⬡ [SIG] 시그널</button>
+    <button data-tab="Phase8-Mem" class="p8">⬡ [MEM] 메모리 보호</button>
+    <button data-tab="Phase8-Spec" class="p8">⬡ [특장점] 시간여행·결정론</button>
+  </div>
+
+  <div class="sep"></div>
+
+  <div class="nav">
+    <div class="nav-label">문서 본문 검색</div>
+    <button data-tab="Docs" class="doc-tab">📄 Docs</button>
+    <button data-tab="Docs-TODO_PHASE8_USERLAND" class="doc-tab">└ Phase 8 Plan</button>
+  </div>
+
+  <div class="sidebar-footer">
+    sjcanvos@canvasos.dev<br>
+    부산, 대한민국
+  </div>
+</aside>
+
+<!-- main -->
+<section class="main">
+  <div class="topbar">
+    <div class="arch-pills">
+      <span class="pill"><span class="dot A"></span>A=Where</span>
+      <span class="pill"><span class="dot B"></span>B=What</span>
+      <span class="pill"><span class="dot G"></span>G=State</span>
+      <span class="pill"><span class="dot R"></span>R=Stream</span>
+      <span class="pill"><span class="dot p8"></span>P8</span>
+    </div>
+    <div class="sw">
+      <span class="pfx">›</span>
+      <input id="search" type="text" autocomplete="off" spellcheck="false"
+        placeholder="심볼·함수·개념·문서 본문 통합 검색 — proc_spawn, sig_send, tile_check, timewarp …">
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="meta" id="meta"></div>
+    <div id="arch-map"></div>
+    <div id="cap-bar"></div>
+    <div class="cards" id="cards"></div>
+  </div>
+</section>
+</div>
+
+<script>
+/* ── DATA ── */
+const DATA = [
+  /* ── Group: Phase8 — Process Model ── */
+  {kind:"struct", key:"Process (확장)", group:"Phase8", desc:"프로세스 테이블 엔트리. Phase-8에서 parent_pid, code_tile, code_tiles, stack_tile, exit_code, lane_id 필드가 추가됨.", loc:"include/canvasos_proc.h", tags:"proc p8", keywords:"process spawn exec exit wait zombie parent child fork", values:"pid:u32, parent_pid:u32, code_tile:u16, code_tiles:u16, stack_tile:u16, exit_code:u8, lane_id:u8", channel:"A,G"},
+  {kind:"field", key:"Process.parent_pid", group:"Phase8", desc:"부모 프로세스 PID. proc_exit 시 자식이 init(pid=0)에 입양될 때 참조.", loc:"include/canvasos_proc.h", tags:"proc p8", keywords:"parent pid fork zombie", values:"", channel:"A"},
+  {kind:"field", key:"Process.code_tile", group:"Phase8", desc:"이 프로세스의 코드가 적재된 타일 시작 번호.", loc:"include/canvasos_proc.h", tags:"proc p8", keywords:"code tile exec", values:"", channel:"A"},
+  {kind:"field", key:"Process.lane_id", group:"Phase8", desc:"소속 Lane(= uid 역할). Lane 0=root, Lane 1~254=일반 사용자.", loc:"include/canvasos_proc.h", tags:"proc p8 user", keywords:"lane uid user permission", values:"", channel:"A"},
+  {kind:"func", key:"proc_spawn(ctx, parent_pid, code_tile, energy)", group:"Phase8", desc:"자식 프로세스 생성. 부모 게이트 공간 분리 + WH SPAWN 레코드 기록. pid 반환.", loc:"include/canvasos_proc.h src/proc.c", tags:"proc p8", keywords:"spawn fork create process", values:"returns: pid (int)", channel:"A,G"},
+  {kind:"func", key:"proc_exec(ctx, pid, code_tile)", group:"Phase8", desc:"기존 프로세스의 코드 타일 교체. 이전 코드 타일 해제 + WH EXEC 기록.", loc:"src/proc.c", tags:"proc p8", keywords:"exec load code tile", values:"returns: int (0=ok)", channel:"A,B"},
+  {kind:"func", key:"proc_exit(ctx, pid, exit_code)", group:"Phase8", desc:"ZOMBIE 상태 전환. 자식→init 입양, 부모에 SIGCHLD, 게이트 CLOSE.", loc:"src/proc.c", tags:"proc p8", keywords:"exit zombie sigchld gate close", values:"returns: int", channel:"G"},
+  {kind:"func", key:"proc_wait(ctx, parent_pid, &status)", group:"Phase8", desc:"ZOMBIE 자식 회수. 슬롯 free. status에 exit_code 기록.", loc:"src/proc.c", tags:"proc p8", keywords:"wait zombie reap slot free", values:"returns: pid of reaped child", channel:"G"},
+  {kind:"struct", key:"Signal state (Process 내)", group:"Phase8", desc:"프로세스별 시그널 상태. sig_pending=비트마스크(8개), sig_mask=블록된 시그널, sig_handler[8]=핸들러 포인터 배열.", loc:"include/canvasos_signal.h", tags:"sig p8", keywords:"signal pending mask handler", values:"sig_pending:u8, sig_mask:u8, sig_handler[8]:ptr", channel:"B,G"},
+  {kind:"enum", key:"Signal 종류 (SIG_*)", group:"Phase8", desc:"Phase-8 시그널 번호. SIGKILL은 블록 불가(sig_mask 무시).", loc:"include/canvasos_signal.h", tags:"sig p8", keywords:"signal kill stop cont child alarm usr", values:"SIG_KILL=1, SIG_STOP=2, SIG_CONT=3, SIG_CHILD=4, SIG_USR1=5, SIG_USR2=6, SIG_ALARM=7", channel:"B"},
+  {kind:"func", key:"sig_send(ctx, dst_pid, signal)", group:"Phase8", desc:"sig_pending에 비트 설정 + WH SIG_SEND(0x70) 레코드 기록.", loc:"src/signal.c", tags:"sig p8", keywords:"signal send kill stop", values:"returns: int", channel:"B"},
+  {kind:"func", key:"sig_check(ctx, pid)", group:"Phase8", desc:"tick boundary에서 호출. pending & ~mask 확인 → 핸들러 호출 또는 기본동작.", loc:"src/signal.c", tags:"sig p8", keywords:"signal check pending mask", values:"returns: int", channel:"B,G"},
+  {kind:"func", key:"sig_mask_set(ctx, pid, mask)", group:"Phase8", desc:"시그널 블록 마스크 설정. SIG_KILL(1)은 항상 전달됨(블록 불가).", loc:"src/signal.c", tags:"sig p8", keywords:"signal mask block", values:"", channel:"B"},
+  {kind:"func", key:"sig_mask_clear(ctx, pid, mask)", group:"Phase8", desc:"시그널 블록 마스크 해제.", loc:"src/signal.c", tags:"sig p8", keywords:"signal mask unblock", values:"", channel:"B"},
+  {kind:"struct", key:"TileGroup 보호 (메모리 보호)", group:"Phase8", desc:"tile_owner[TILE_COUNT]과 tile_perm[TILE_COUNT]으로 타일별 소유권과 권한을 관리.", loc:"include/canvasos_mprotect.h", tags:"mem p8", keywords:"tile owner perm memory protect mprotect", values:"tile_owner[4096]:u16, tile_perm[4096]:u8", channel:"A,G"},
+  {kind:"enum", key:"PERM_* 권한 플래그", group:"Phase8", desc:"타일 접근 권한 비트. PERM_SHARED이면 다른 프로세스도 접근 가능.", loc:"include/canvasos_mprotect.h", tags:"mem p8", keywords:"perm read write exec shared tile", values:"PERM_READ=0x01, PERM_WRITE=0x02, PERM_EXEC=0x04, PERM_SHARED=0x08", channel:"G"},
+  {kind:"func", key:"tile_alloc(ctx, pid, count)", group:"Phase8", desc:"연속 타일 count개를 pid에 할당. tile_owner에 pid 기록.", loc:"src/mprotect.c", tags:"mem p8", keywords:"tile alloc allocate pid", values:"returns: start tile_id (int)", channel:"A"},
+  {kind:"func", key:"tile_free(ctx, pid, start, count)", group:"Phase8", desc:"pid 소유 타일을 해제. tile_owner=0으로 초기화.", loc:"src/mprotect.c", tags:"mem p8", keywords:"tile free release", values:"", channel:"A"},
+  {kind:"func", key:"tile_check(ctx, pid, tile_id, perm)", group:"Phase8", desc:"접근 검사. 실패 시 SIG_SEGV 전송 + WH FAULT(0x72) 기록.", loc:"src/mprotect.c", tags:"mem p8", keywords:"tile check permission segv fault", values:"returns: 0=ok, -1=denied", channel:"A,G"},
+  {kind:"func", key:"tile_set_perm(ctx, pid, tile_id, perm)", group:"Phase8", desc:"타일 권한 비트 설정.", loc:"src/mprotect.c", tags:"mem p8", keywords:"tile perm set permission", values:"", channel:"G"},
+
+  /* ── Group: Phase8 — Special Features ── */
+  {kind:"struct", key:"DetMode", group:"Phase8", desc:"결정론 모드 설정. DK-1~5 각 규약 개별 토글 가능. 비결정론 전환 시 WH에 DET_MODE_CHANGE 기록.", loc:"include/canvasos_detmode.h", tags:"det spec p8", keywords:"det deterministic mode dk1 dk2 dk3 dk4 dk5 wh recording nondet", values:"dk1_tick_boundary:bool, dk2_integer_only:bool, dk3_fixed_order:bool, dk4_normalize:bool, dk5_noise_absorb:bool, wh_recording:bool, nondet_since:u32", channel:"G"},
+  {kind:"func", key:"det_set_mode(ctx, DetMode *mode)", group:"Phase8", desc:"결정론 모드 설정. WH에 DET_MODE_CHANGE(0x81) 기록.", loc:"src/detmode.c", tags:"det spec p8", keywords:"det mode set deterministic toggle", values:"", channel:"G"},
+  {kind:"func", key:"det_reset(ctx)", group:"Phase8", desc:"전체 DK 규약 복원(모든 bool → true). 결정론 복귀.", loc:"src/detmode.c", tags:"det spec p8", keywords:"det reset restore deterministic", values:"", channel:"G"},
+  {kind:"func", key:"det_is_deterministic(ctx)", group:"Phase8", desc:"전체 DK 규약이 적용 중인지 확인.", loc:"src/detmode.c", tags:"det spec p8", keywords:"det check deterministic", values:"returns: bool", channel:"G"},
+  {kind:"opcode", key:"WH_OP_DET_MODE = 0x81", group:"Phase8", desc:"WH ring에 결정론 모드 변경 기록. 이후 replay 불가 경고 포함.", loc:"include/canvasos_opcodes.h", tags:"wh opcode det spec p8", keywords:"wh det mode change record audit", values:"0x81", channel:"B"},
+  {kind:"func", key:"timewarp_goto(ctx, target_tick)", group:"Phase8", desc:"tick target으로 시간여행. 자동 CVP 백업 → WH 기반 상태 재구성 → Tervas 스냅샷.", loc:"src/timewarp.c", tags:"timewarp spec p8", keywords:"timewarp goto tick time travel debugger", values:"returns: int", channel:"G"},
+  {kind:"func", key:"timewarp_resume(ctx)", group:"Phase8", desc:"CVP 백업에서 현재 시점으로 복원.", loc:"src/timewarp.c", tags:"timewarp spec p8", keywords:"timewarp resume restore current", values:"returns: int", channel:"G"},
+  {kind:"func", key:"timewarp_step(ctx, n_ticks)", group:"Phase8", desc:"target_tick에서 n_ticks만큼 재실행. 중간 상태를 Tervas로 관찰.", loc:"src/timewarp.c", tags:"timewarp spec p8", keywords:"timewarp step replay observe", values:"returns: int", channel:"G"},
+  {kind:"helper", key:"timewarp 셸 명령", group:"Phase8", desc:"셸에서 시간여행 조작. 과거 해시 검증과 중간 상태 관찰 지원.", loc:"src/timewarp.c", tags:"timewarp spec p8 shell", keywords:"timewarp shell command goto step resume diff debugger", values:"timewarp N, timewarp +N, timewarp step N, timewarp resume, timewarp diff N", channel:"G"},
+  {kind:"func", key:"watch_start(ctx, refresh_ms)", group:"Phase8", desc:"실시간 미니맵 갱신 시작. Tervas 연동으로 프로세스별 색상 구분 + WH 기록 실시간 표시.", loc:"src/watch.c", tags:"watch spec p8", keywords:"watch start minimap realtime process color wh", values:"", channel:"G"},
+  {kind:"func", key:"watch_stop(ctx)", group:"Phase8", desc:"실시간 미니맵 갱신 중지.", loc:"src/watch.c", tags:"watch spec p8", keywords:"watch stop minimap", values:"", channel:"G"},
+  {kind:"func", key:"watch_set_filter(ctx, TvProjectionMode mode)", group:"Phase8", desc:"Tervas 프로젝션 모드 설정. WH만, 특정 pid 강조 등 필터 전환.", loc:"src/watch.c", tags:"watch spec p8", keywords:"watch filter tervas projection pid wh", values:"", channel:"G"},
+  {kind:"opcode", key:"WH_OP_SIG_SEND = 0x70", group:"Phase8", desc:"WH ring에 시그널 전송 이벤트 기록.", loc:"include/canvasos_opcodes.h", tags:"sig wh opcode p8", keywords:"wh signal send record", values:"0x70", channel:"B"},
+  {kind:"opcode", key:"WH_OP_MPROTECT = 0x71", group:"Phase8", desc:"WH ring에 타일 권한 변경 이벤트 기록.", loc:"include/canvasos_opcodes.h", tags:"mem wh opcode p8", keywords:"wh mprotect tile perm record", values:"0x71", channel:"B"},
+  {kind:"opcode", key:"WH_OP_FAULT = 0x72", group:"Phase8", desc:"WH ring에 메모리 접근 위반 기록(포렌식용).", loc:"include/canvasos_opcodes.h", tags:"mem wh opcode p8 fault", keywords:"wh fault segv memory access violation forensic", values:"0x72", channel:"B"},
+  {kind:"opcode", key:"WH_OP_PROC_SPAWN = 0x75", group:"Phase8", desc:"WH ring에 프로세스 생성 이벤트 기록.", loc:"include/canvasos_opcodes.h", tags:"proc wh opcode p8", keywords:"wh proc spawn create record", values:"0x75", channel:"B"},
+  {kind:"opcode", key:"WH_OP_PROC_EXIT = 0x76", group:"Phase8", desc:"WH ring에 프로세스 종료 이벤트 기록.", loc:"include/canvasos_opcodes.h", tags:"proc wh opcode p8", keywords:"wh proc exit zombie record", values:"0x76", channel:"B"},
+  {kind:"opcode", key:"WH_OP_PROC_EXEC = 0x77", group:"Phase8", desc:"WH ring에 코드 교체 이벤트 기록.", loc:"include/canvasos_opcodes.h", tags:"proc wh opcode p8", keywords:"wh proc exec code tile swap record", values:"0x77", channel:"B"},
+  {kind:"helper", key:"유틸리티 명령 (cmd_*)", group:"Phase8", desc:"셸 내장 유틸리티. 프로세스(ps/top/kill), 파일(cat/echo/ls/cd/mkdir/rm/cp), 시스템(hash/info/save/load).", loc:"include/canvasos_utils.h src/utils.c", tags:"shell utils p8", keywords:"ps top kill cat echo ls cd mkdir rm cp hash info save load utility cmd", values:"cmd_ps, cmd_top, cmd_kill, cmd_cat, cmd_echo, cmd_ls, cmd_cd, cmd_mkdir, cmd_rm, cmd_cp, cmd_hash, cmd_info, cmd_save, cmd_load", channel:"A,R"},
+
+  /* ── Group: IPC — Pipes and File Descriptors ── */
+  {kind:"struct", key:"Pipe", group:"IPC", desc:"프로세스 간 단방향 데이터 스트림. CanvasFS 슬롯 1개를 원형 버퍼로 사용. writer/reader 게이트 기반.", loc:"include/canvasos_pipe.h", tags:"pipe ipc p8", keywords:"pipe stream ipc circular buffer writer reader", values:"slot:FsKey, writer_pid:u32, reader_pid:u32, write_cursor:u16, read_cursor:u16, capacity:u16(224), closed:bool", channel:"R"},
+  {kind:"const", key:"PIPE_MAX", group:"IPC", desc:"동시에 존재할 수 있는 파이프의 최대 수.", loc:"include/canvasos_pipe.h", tags:"pipe p8", keywords:"pipe max count", values:"PIPE_MAX=64", channel:"R"},
+  {kind:"func", key:"pipe_create(ctx, writer_pid, reader_pid, &pipe_id)", group:"IPC", desc:"파이프 생성. FsKey 슬롯 할당 + pipe_id 반환.", loc:"src/pipe.c", tags:"pipe ipc p8", keywords:"pipe create writer reader", values:"returns: 0=ok", channel:"R"},
+  {kind:"func", key:"pipe_write(ctx, pipe_id, data, len)", group:"IPC", desc:"파이프에 데이터 쓰기. 버퍼 가득 → writer BLOCKED.", loc:"src/pipe.c", tags:"pipe ipc p8", keywords:"pipe write buffer blocked", values:"returns: written bytes", channel:"R"},
+  {kind:"func", key:"pipe_read(ctx, pipe_id, buf, len)", group:"IPC", desc:"파이프에서 데이터 읽기. 버퍼 비어있음 → reader BLOCKED.", loc:"src/pipe.c", tags:"pipe ipc p8", keywords:"pipe read buffer blocked eof", values:"returns: read bytes", channel:"R"},
+  {kind:"func", key:"pipe_close(ctx, pipe_id)", group:"IPC", desc:"파이프 닫기. closed=true → reader에 EOF 전달.", loc:"src/pipe.c", tags:"pipe ipc p8", keywords:"pipe close eof", values:"", channel:"R"},
+  {kind:"opcode", key:"WH_OP_PIPE_WRITE = 0x73", group:"IPC", desc:"WH ring에 파이프 쓰기 이벤트 기록.", loc:"include/canvasos_opcodes.h", tags:"pipe wh opcode p8", keywords:"wh pipe write record", values:"0x73", channel:"B"},
+  {kind:"opcode", key:"WH_OP_PIPE_READ = 0x74", group:"IPC", desc:"WH ring에 파이프 읽기 이벤트 기록.", loc:"include/canvasos_opcodes.h", tags:"pipe wh opcode p8", keywords:"wh pipe read record", values:"0x74", channel:"B"},
+  {kind:"struct", key:"FileDesc", group:"IPC", desc:"파일 디스크립터. CanvasFS FsKey를 리눅스 스타일 fd로 추상화.", loc:"include/canvasos_fd.h", tags:"fd ipc p8", keywords:"fd file descriptor open read write close cursor flags type", values:"key:FsKey, cursor:u16, flags:u8, type:u8", channel:"R"},
+  {kind:"const", key:"FD_MAX_PER_PROC", group:"IPC", desc:"프로세스당 최대 파일 디스크립터 수. fd=0(stdin)/1(stdout)/2(stderr) 예약.", loc:"include/canvasos_fd.h", tags:"fd p8", keywords:"fd max process stdin stdout stderr", values:"FD_MAX_PER_PROC=16", channel:"R"},
+  {kind:"enum", key:"fd flags (O_READ/O_WRITE/O_APPEND)", group:"IPC", desc:"fd 열기 플래그. O_APPEND 모드이면 커서가 항상 끝으로 이동.", loc:"include/canvasos_fd.h", tags:"fd p8", keywords:"fd flags read write append", values:"O_READ=0x01, O_WRITE=0x02, O_APPEND=0x04", channel:"R"},
+  {kind:"enum", key:"fd type (FD_FILE/FD_PIPE/FD_DEVICE)", group:"IPC", desc:"fd 타입. FD_PIPE이면 pipe_id를 참조.", loc:"include/canvasos_fd.h", tags:"fd p8", keywords:"fd type file pipe device", values:"FD_FILE=0, FD_PIPE=1, FD_DEVICE=2", channel:"B"},
+  {kind:"func", key:"fd_open(ctx, pid, path, flags)", group:"IPC", desc:"경로 탐색 후 fd 할당. fd 번호 반환.", loc:"src/fd.c", tags:"fd p8", keywords:"fd open file path", values:"returns: fd number (int)", channel:"R"},
+  {kind:"func", key:"fd_read(ctx, pid, fd, buf, len)", group:"IPC", desc:"fd에서 buf로 len바이트 읽기. cursor 전진.", loc:"src/fd.c", tags:"fd p8", keywords:"fd read buf cursor", values:"returns: bytes read", channel:"R"},
+  {kind:"func", key:"fd_write(ctx, pid, fd, buf, len)", group:"IPC", desc:"buf에서 fd로 len바이트 쓰기.", loc:"src/fd.c", tags:"fd p8", keywords:"fd write buf", values:"returns: bytes written", channel:"R"},
+  {kind:"func", key:"fd_close(ctx, pid, fd)", group:"IPC", desc:"fd 해제. FD_PIPE이면 pipe_close 호출.", loc:"src/fd.c", tags:"fd p8", keywords:"fd close release", values:"returns: int", channel:"R"},
+  {kind:"func", key:"fd_seek(ctx, pid, fd, offset)", group:"IPC", desc:"fd 커서 이동. FD_PIPE에는 사용 불가.", loc:"src/fd.c", tags:"fd p8", keywords:"fd seek cursor offset", values:"returns: int", channel:"R"},
+  {kind:"func", key:"fd_dup(ctx, pid, old_fd, new_fd)", group:"IPC", desc:"fd 복제. 파이프 리다이렉션에 사용. new_fd=-1이면 자동 할당.", loc:"src/fd.c", tags:"fd p8", keywords:"fd dup duplicate redirect pipe stdout", values:"returns: new_fd", channel:"R"},
+
+  /* ── Group: Kernel — Path + User + Shell ── */
+  {kind:"struct", key:"PathContext", group:"Kernel", desc:"경로 탐색 컨텍스트. 프로세스별 현재 디렉터리(cwd)를 CanvasFS FsKey로 추적.", loc:"include/canvasos_path.h", tags:"path p8", keywords:"path cwd directory resolve pid", values:"pid:u32, cwd:FsKey", channel:"A"},
+  {kind:"func", key:"path_resolve(ctx, pctx, path_str, &out_key)", group:"Kernel", desc:'"/로 분할 → DIR1 name_hash 탐색 → 최종 FsKey 반환. "."/".."/"/" 특수 경로 처리.', loc:"src/path.c", tags:"path p8", keywords:"path resolve directory traverse dir1 hash", values:"returns: 0=ok, -1=not found", channel:"A"},
+  {kind:"func", key:"path_mkdir(ctx, pctx, name)", group:"Kernel", desc:"현재 cwd에 새 디렉터리 DIR1 슬롯 생성.", loc:"src/path.c", tags:"path p8", keywords:"mkdir create directory", values:"returns: FsKey", channel:"A"},
+  {kind:"func", key:"path_ls(ctx, pctx, dir_key, entries[], max)", group:"Kernel", desc:"디렉터리 DIR1 엔트리 열거. name_hash + FsKey 배열 채움.", loc:"src/path.c", tags:"path p8", keywords:"ls list directory entries", values:"returns: entry count", channel:"A"},
+  {kind:"func", key:"path_cd(ctx, pctx, path_str)", group:"Kernel", desc:"cwd를 path_str로 변경. path_resolve 후 pctx->cwd 갱신.", loc:"src/path.c", tags:"path p8", keywords:"cd chdir directory change", values:"returns: int", channel:"A"},
+  {kind:"func", key:"path_rm(ctx, pctx, path_str)", group:"Kernel", desc:"파일/디렉터리 제거. DIR1에서 엔트리 삭제 + 슬롯 해제.", loc:"src/path.c", tags:"path p8", keywords:"rm remove delete file directory", values:"returns: int", channel:"A"},
+  {kind:"struct", key:"User", group:"Kernel", desc:"사용자 정보. Lane = uid 역할. home_tile이 홈 디렉터리를 가리킴.", loc:"include/canvasos_user.h", tags:"user p8", keywords:"user lane uid home tile priv root", values:"lane_id:u8, name[16]:char, home_tile:u16, priv:u8", channel:"A"},
+  {kind:"enum", key:"PRIV_* 권한 레벨", group:"Kernel", desc:"사용자 권한 레벨. PRIV_ROOT는 모든 타일 접근 가능.", loc:"include/canvasos_user.h", tags:"user p8", keywords:"priv root user guest permission lane", values:"PRIV_ROOT=0x80, PRIV_USER=0x40, PRIV_GUEST=0x20", channel:"G"},
+  {kind:"const", key:"Lane 사용자 매핑", group:"Kernel", desc:"Lane 번호와 사용자 역할 매핑. 시스템 전체 규약.", loc:"include/canvasos_user.h", tags:"user p8", keywords:"lane root broadcast system user", values:"Lane 0=root, Lane 1~254=일반사용자, Lane 255=broadcast", channel:"A"},
+  {kind:"func", key:"user_create(ctx, lane_id, name, priv)", group:"Kernel", desc:"사용자 생성. home_tile 자동 할당.", loc:"src/user.c", tags:"user p8", keywords:"user create lane name", values:"returns: int", channel:"A"},
+  {kind:"func", key:"user_check_perm(ctx, uid, tile_id, perm)", group:"Kernel", desc:"uid가 tile_id에 perm 권한이 있는지 확인. root(Lane 0)는 항상 통과.", loc:"src/user.c", tags:"user p8", keywords:"user check permission tile uid root", values:"returns: 0=ok, -1=denied", channel:"A,G"},
+  {kind:"func", key:"user_su(ctx, pid, target_lane)", group:"Kernel", desc:"Lane 전환(su). root(Lane 0)만 가능.", loc:"src/user.c", tags:"user p8", keywords:"su sudo lane switch root", values:"returns: int", channel:"A"},
+  {kind:"helper", key:"CanvasShell 문법", group:"Kernel", desc:"Phase-8 셸 문법. 파이프, 리다이렉션, 변수, 스크립트 지원. pid=1로 실행.", loc:"include/canvasos_shell.h src/shell.c", tags:"shell p8", keywords:"shell pipe redirect variable script echo cat ls cd mkdir rm cp ps kill top hash save load timewarp det watch exit", values:"cmd | cmd2, cmd > file, cmd >> file, cmd < file, $VAR=val, source file", channel:"R"},
+
+  /* ── Group: Syscall ── */
+  {kind:"func", key:"syscall(ctx, pid, syscall_nr, arg0, arg1, arg2)", group:"Syscall", desc:"시스템 콜 진입점. WH SYSCALL(0x80) 기록 → dispatch 테이블에서 핸들러 호출.", loc:"include/canvasos_syscall.h src/syscall.c", tags:"syscall p8", keywords:"syscall dispatch table handler wh", values:"returns: int", channel:"B"},
+  {kind:"enum", key:"SYS_SPAWN / SYS_EXIT / SYS_WAIT / SYS_KILL / SYS_SIGNAL", group:"Syscall", desc:"프로세스 관리 시스템 콜 번호.", loc:"include/canvasos_syscall.h", tags:"syscall p8 proc", keywords:"syscall spawn exit wait kill signal", values:"SYS_SPAWN=0x01, SYS_EXIT=0x02, SYS_WAIT=0x03, SYS_KILL=0x04, SYS_SIGNAL=0x05", channel:"B"},
+  {kind:"enum", key:"SYS_OPEN / SYS_READ / SYS_WRITE / SYS_CLOSE / SYS_SEEK", group:"Syscall", desc:"파일 I/O 시스템 콜 번호.", loc:"include/canvasos_syscall.h", tags:"syscall p8 fd", keywords:"syscall open read write close seek file fd", values:"SYS_OPEN=0x10, SYS_READ=0x11, SYS_WRITE=0x12, SYS_CLOSE=0x13, SYS_SEEK=0x14", channel:"B,R"},
+  {kind:"enum", key:"SYS_MKDIR / SYS_LS / SYS_RM", group:"Syscall", desc:"디렉터리 시스템 콜 번호.", loc:"include/canvasos_syscall.h", tags:"syscall p8 path", keywords:"syscall mkdir ls rm directory", values:"SYS_MKDIR=0x15, SYS_LS=0x16, SYS_RM=0x17", channel:"B,A"},
+  {kind:"enum", key:"SYS_PIPE / SYS_DUP", group:"Syscall", desc:"파이프/리다이렉션 시스템 콜 번호.", loc:"include/canvasos_syscall.h", tags:"syscall p8 pipe ipc", keywords:"syscall pipe dup redirect ipc", values:"SYS_PIPE=0x20, SYS_DUP=0x21", channel:"B,R"},
+  {kind:"enum", key:"SYS_GATE_OPEN / SYS_GATE_CLOSE / SYS_MPROTECT", group:"Syscall", desc:"게이트/메모리 보호 시스템 콜.", loc:"include/canvasos_syscall.h", tags:"syscall p8 gate mem", keywords:"syscall gate open close mprotect tile", values:"SYS_GATE_OPEN=0x30, SYS_GATE_CLOSE=0x31, SYS_MPROTECT=0x32", channel:"B,A"},
+  {kind:"enum", key:"SYS_TICK / SYS_GETPID / SYS_GETPPID / SYS_TIME / SYS_HASH", group:"Syscall", desc:"시스템 정보 시스템 콜.", loc:"include/canvasos_syscall.h", tags:"syscall p8 info", keywords:"syscall tick pid ppid time hash info", values:"SYS_TICK=0x40, SYS_GETPID=0x41, SYS_GETPPID=0x42, SYS_TIME=0x43, SYS_HASH=0x44", channel:"B,A,G"},
+  {kind:"enum", key:"SYS_TIMEWARP / SYS_DET_MODE / SYS_SNAPSHOT (특장점)", group:"Syscall", desc:"CanvasOS 특장점 시스템 콜. 시간여행, 결정론 토글, Tervas 스냅샷.", loc:"include/canvasos_syscall.h", tags:"syscall p8 spec timewarp det", keywords:"syscall timewarp det mode snapshot tervas canvasos feature", values:"SYS_TIMEWARP=0x50, SYS_DET_MODE=0x51, SYS_SNAPSHOT=0x52", channel:"B,A"},
+  {kind:"opcode", key:"WH_OP_SYSCALL = 0x80", group:"Syscall", desc:"WH ring에 시스템 콜 호출 기록. 모든 syscall() 진입 시 기록됨.", loc:"include/canvasos_opcodes.h", tags:"wh opcode syscall p8", keywords:"wh ring syscall record audit log", values:"0x80", channel:"B"},
+
+  /* ── Group: Docs ── */
+  {kind:"doc", key:"TODO_PHASE8_USERLAND", group:"Docs", desc:"<내용 요약> Phase-8 Userland Completion 전체 설계 문서. 리눅스 대응표, Task 상세(T8-01~T8-13), 의존성 그래프, 완료 조건, 새 WH 옵코드 목록 수록.", loc:"TODO_PHASE8_USERLAND", tags:"docs p8", keywords:"phase8 userland proc signal mprotect pipe fd path shell syscall user utils timewarp detmode watch"}
+];
+
+const ARCH_MAP = [
+  {n:"Q0",     i:"(0,0)→(511,511)",      c:"dim",  s:""},
+  {n:"Q1",     i:"(512,0)→(1023,511)",   c:"dim",  s:""},
+  {n:"CTRL",   i:"CR0..CR3 kernel",      c:"ctrl", s:"Control Region"},
+  {n:"CVP",    i:"header+TLV 8.5MB",     c:"cvp",  s:"CVP"},
+  {n:"Q2",     i:"(0,512)→(511,639)",    c:"dim",  s:""},
+  {n:"P8-PROC",i:"pid 0..63 process table", c:"p5", s:"Phase8"},
+  {n:"WH",     i:"(512,512) 512×128",    c:"wh",   s:"WH"},
+  {n:"BH",     i:"(512,640) 512×64",     c:"bh",   s:"BH"},
+  {n:"Q3",     i:"(0,704)→(511,1023)",   c:"dim",  s:""},
+  {n:"P8-PIPE",i:"PIPE_MAX=64 circular buf", c:"p5", s:"Phase8"},
+  {n:"SYS",    i:"syscall dispatch table", c:"p5", s:"Syscall"},
+  {n:"BH-C",   i:"BH compress IDLE/LOOP/BURST", c:"bh", s:"[BH]"},
+  {n:"DK-1",   i:"Tick Boundary rule",   c:"p5",   s:"DK-1"},
+  {n:"CVP§",   i:"TLV SEC 1..5",         c:"cvp",  s:"CVP_SECTIONS"},
+];
+
+const CAP = [
+  {v:"8 MB",   l:"Canvas 메모리"},
+  {v:"4,096",  l:"Gate (타일)"},
+  {v:"256",    l:"Lane (A채널)"},
+  {v:"64",     l:"프로세스 (PROC_MAX)"},
+  {v:"64",     l:"파이프 (PIPE_MAX)"},
+  {v:"16",     l:"fd/프로세스"},
+  {v:"4096",   l:"타일 소유권"},
+];
+
+/* ── state ── */
+let activeTab = "Home";
+let dbt;
+
+/* ── helpers ── */
+function esc(s){
+  return (s||'').replace(/[&<>"']/g, c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function chBadges(ch){
+  if(!ch) return '';
+  return [...new Set((ch||'').split(/[,\s]+/).filter(x=>x))]
+    .filter(x=>['A','B','G','R'].includes(x))
+    .map(x=>`<span class="badge ${x}">${x}</span>`).join('');
+}
+
+function groupColor(g){
+  const m={
+    'Core':'gCore','Engine':'gEngine','Filesystem':'gFilesystem',
+    'I/O':'gIO','IO':'gIO','Docs':'gDocs','Phase5':'gPhase5',
+    'Kernel':'gKernel','IPC':'gIPC','Syscall':'gSyscall','Phase8':'gPhase8'
+  };
+  return m[g]||'gCore';
+}
+
+/* ── arch map ── */
+(function(){
+  const el = document.getElementById('arch-map');
+  el.className = 'arch-map';
+  ARCH_MAP.forEach(t=>{
+    const d = document.createElement('div');
+    d.className=`am ${t.c}${t.s?' click':''}`;
+    d.innerHTML=`<div class="am-name">${t.n}</div><div class="am-info">${t.i}</div>`;
+    if(t.s) d.onclick=()=>doSearch(t.s);
+    el.appendChild(d);
+  });
+})();
+
+/* ── cap bar ── */
+(function(){
+  const el = document.getElementById('cap-bar');
+  el.className = 'cap-bar';
+  CAP.forEach((c,i)=>{
+    if(i) el.insertAdjacentHTML('beforeend','<span class="cap-sep">·</span>');
+    el.insertAdjacentHTML('beforeend',
+      `<div class="cap-item"><div class="cap-val">${c.v}</div><div class="cap-label">${c.l}</div></div>`);
+  });
+})();
+
+/* ── card render ── */
+function cardHTML(item, idx){
+  const isDoc = item.kind === 'doc';
+  const isP5  = item.group === 'Phase5';
+  const isP8  = item.group === 'Phase8';
+  const gc = groupColor(item.group||'Core');
+
+  let grpBadge;
+  if(isP8)       grpBadge = `<span class="badge p8b">P8</span>`;
+  else if(isP5)  grpBadge = `<span class="badge p5b">P5</span>`;
+  else if(isDoc) grpBadge = `<span class="badge dob">DOC</span>`;
+  else grpBadge = `<span class="badge grp">${esc(item.group||'')}</span>`;
+
+  const kindBadge = `<span class="badge">${esc(item.kind||'').toUpperCase()}</span>`;
+  const chB = chBadges(item.channel||'');
+
+  /* keywords as clickable pills */
+  const kws = (item.keywords||'').split(/\s+/).filter(Boolean).slice(0,12);
+  const kwH = kws.map(k=>`<span class="kw" onclick="doSearch('${k}')">${k}</span>`).join('');
+
+  /* doc body preview */
+  const docPreview = isDoc && item.desc
+    ? `<div class="doc-body">${esc(item.desc.substring(0,500))}</div>`
+    : '';
+
+  return `<div class="card ${gc}" id="c${idx}" style="animation-delay:${Math.min(idx*.02,.25)}s">
+    <div class="head" onclick="toggle(${idx})">
+      <div class="key">${esc(item.key)}</div>
+      ${grpBadge}${kindBadge}${chB}
+      <div class="chev">▶</div>
+    </div>
+    <div class="body">
+      <p class="desc">${esc(item.desc||'')}</p>
+      ${docPreview}
+      <div class="grid">
+        <div class="k">LOCATION</div><div class="v">${esc(item.loc||'')}</div>
+        ${item.values?`<div class="k">VALUES</div><div class="v">${esc(item.values)}</div>`:''}        ${item.tags?`<div class="k">TAGS</div><div class="v">${esc(item.tags)}</div>`:''}        ${kwH?`<div class="k">KEYWORDS</div><div class="v">${kwH}</div>`:''}      </div>
+    </div>
+  </div>`;
+}
+
+/* ── scoring ── */
+function score(item, toks){
+  if(!toks.length) return 1;
+  const hay = [item.key,item.desc,item.loc,item.values||'',
+                item.tags||'',item.keywords||'',item.group||'',item.kind||''].join(' ').toLowerCase();
+  let hit=0;
+  for(const t of toks) if(hay.includes(t)) hit++;
+  return hit/toks.length;
+}
+
+/* ── render ── */
+function render(){
+  const q = document.getElementById('search').value.trim();
+  const toks = q.toLowerCase().split(/\s+/).filter(Boolean);
+
+  let items = DATA;
+
+  /* tab filter */
+  if(activeTab==='Home'){
+    /* 전체 — arch map, cap bar 표시 */
+    document.getElementById('arch-map').style.display='';
+    document.getElementById('cap-bar').style.display='';
+  } else {
+    document.getElementById('arch-map').style.display='none';
+    document.getElementById('cap-bar').style.display='none';
+  }
+
+  if(activeTab==='Phase8-Proc')      items=items.filter(x=>x.tags&&x.tags.includes('proc'));
+  else if(activeTab==='Phase8-Sig')  items=items.filter(x=>x.tags&&x.tags.includes('sig'));
+  else if(activeTab==='Phase8-Mem')  items=items.filter(x=>x.tags&&x.tags.includes('mem'));
+  else if(activeTab==='Phase8-Spec') items=items.filter(x=>x.tags&&(x.tags.includes('spec')||x.tags.includes('timewarp')||x.tags.includes('det')||x.tags.includes('watch')));
+  else if(activeTab==='Phase8')      items=items.filter(x=>x.group==='Phase8');
+  else if(activeTab==='Docs')        items=items.filter(x=>x.group==='Docs');
+  else if(activeTab.startsWith('Docs-')){
+    const dk=activeTab.replace('Docs-','');
+    items=items.filter(x=>x.group==='Docs'&&(x.loc||'').startsWith(dk));
+  }
+  else if(activeTab!=='Home') items=items.filter(x=>(x.group||'')==activeTab);
+
+  if(toks.length){
+    items=items.map(x=>{return {x,s:score(x,toks)}})
+               .filter(o=>o.s>0)
+               .sort((a,b)=>b.s-a.s)
+               .map(o=>o.x);
+  }
+
+  const meta=document.getElementById('meta');
+  const tabColor=activeTab.startsWith('Docs')?'hi2':'hi';
+  meta.innerHTML=toks.length
+    ?`<span class="hi">${items.length}</span> results · "<span class="hi">${esc(q)}</span>" · tab=<span class="${tabColor}">${esc(activeTab)}</span>`
+    :`<span class="hi">${items.length}</span> entries · tab=<span class="${tabColor}">${esc(activeTab)}</span>`;
+
+  const cards=document.getElementById('cards');
+  if(!items.length){
+    cards.innerHTML=`<div class="empty">검색 결과 없음: "<em>${esc(q)}</em>" — 시도: proc_spawn, sig_send, tile_check, timewarp_goto, pipe_write</div>`;
+    return;
+  }
+  cards.innerHTML=items.map((x,i)=>cardHTML(x,i)).join('');
+}
+
+function toggle(i){document.getElementById('c'+i)?.classList.toggle('open');}
+function doSearch(kw){
+  document.getElementById('search').value=kw;
+  render();
+}
+
+/* ── nav ── */
+document.querySelectorAll('.nav button[data-tab]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    activeTab=b.dataset.tab;
+    render();
+  });
+});
+document.getElementById('search').addEventListener('input',()=>{clearTimeout(dbt);dbt=setTimeout(render,120);});
+render();
+</script>
+</body>
+</html>
