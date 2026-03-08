@@ -1,0 +1,77 @@
+name: Sync DevDictionary → SJ-CANVAOS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'devdict_site/**'
+      - 'docs/devdict_phase*.html'
+      - 'tools/gen_devdict.py'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: Push developer dictionary to SJ-CANVAOS
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout JHTervas (source)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Checkout SJ-CANVAOS (target)
+        uses: actions/checkout@v4
+        with:
+          repository: sjpupro-lab/SJ-CANVAOS
+          token: ${{ secrets.SJ_CANVAOS_PAT }}
+          path: _canvaos
+          fetch-depth: 1
+
+      - name: Sync devdict files into SJ-CANVAOS/devdict/
+        run: |
+          set -e
+
+          # Ensure target directory exists
+          mkdir -p _canvaos/devdict/data
+          mkdir -p _canvaos/devdict/docs
+
+          # Copy main devdict site files
+          cp devdict_site/{index.html,style.css,script.js,data.js,docs_index.json,README.md} _canvaos/devdict/
+
+          # Copy phase-specific legacy HTML pages if they exist
+          for f in devdict_site/phase4_legacy.html devdict_site/reference_phase4.html; do
+            [ -f "$f" ] && cp "$f" _canvaos/devdict/ || true
+          done
+
+          # Copy JSON data files
+          cp devdict_site/data/{index.json,opcodes.json,regions.json,bindings.json} _canvaos/devdict/data/
+
+          # Copy per-phase HTML docs
+          for f in docs/devdict_phase*.html; do
+            [ -f "$f" ] && cp "$f" _canvaos/devdict/docs/ || true
+          done
+
+          # Copy generator tool
+          mkdir -p _canvaos/devdict/tools
+          cp tools/gen_devdict.py _canvaos/devdict/tools/gen_devdict.py
+
+      - name: Commit and push to SJ-CANVAOS
+        working-directory: _canvaos
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add devdict/
+          if git diff --cached --quiet; then
+            echo "No changes to devdict/ — nothing to push."
+          else
+            SOURCE_SHA="${{ github.sha }}"
+            git commit -m "sync: update DevDictionary from JHTervas@${SOURCE_SHA:0:7}
+
+Automated sync of devdict_site/ and per-phase HTML docs.
+Source: https://github.com/sjpupro-lab/JHTervas/commit/${SOURCE_SHA}"
+            git push
+          fi
