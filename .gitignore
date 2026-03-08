@@ -22,6 +22,9 @@ examples/hello_canvas
 # Distribution (generated)
 dist/
 
+# Developer dictionary package (generated)
+devdict_canvasos_*.zip
+
 # Working copies
 p7_build/
 

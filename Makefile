@@ -218,3 +218,13 @@ bridge_test: $(TEST_BRIDGE)
 	./$(TEST_BRIDGE)
 
 .PHONY: bridge_test
+
+# ─────────────────────────────────────────────────────────────────
+# Developer Dictionary — standalone zip package
+# ─────────────────────────────────────────────────────────────────
+
+devdict_pkg:
+	@chmod +x scripts/build_devdict_pkg.sh
+	@./scripts/build_devdict_pkg.sh
+
+.PHONY: devdict_pkg

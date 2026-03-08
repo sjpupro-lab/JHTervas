@@ -46,3 +46,17 @@ package_release:
     expire_in: 30 days
     paths:
       - dist_artifact.zip
+
+package_devdict:
+  stage: package
+  image: ubuntu:22.04
+  before_script:
+    - apt-get update
+    - apt-get install -y zip
+  script:
+    - chmod +x scripts/build_devdict_pkg.sh
+    - ./scripts/build_devdict_pkg.sh
+  artifacts:
+    expire_in: 90 days
+    paths:
+      - devdict_canvasos_*.zip
